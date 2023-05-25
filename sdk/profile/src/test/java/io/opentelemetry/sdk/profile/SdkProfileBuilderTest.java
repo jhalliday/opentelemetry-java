@@ -1,0 +1,102 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+package io.opentelemetry.sdk.profile;
+
+import static io.opentelemetry.sdk.testing.assertj.ProfileAssertions.assertThat;
+import static org.mockito.Mockito.when;
+
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceState;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.sdk.common.Clock;
+import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
+import io.opentelemetry.sdk.resources.Resource;
+import java.time.Instant;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
+
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
+class SdkProfileBuilderTest {
+
+  private static final Resource RESOURCE = Resource.empty();
+  private static final InstrumentationScopeInfo SCOPE_INFO = InstrumentationScopeInfo.empty();
+
+  @Mock ProfilerSharedState profilerSharedState;
+  @Mock Clock clock;
+
+  private final AtomicReference<ReadWriteProfile> emittedProfile = new AtomicReference<>();
+  private SdkProfileBuilder builder;
+
+  @BeforeEach
+  void setup() {
+    when(profilerSharedState.getProfileLimits()).thenReturn(ProfileLimits.getDefault());
+    when(profilerSharedState.getProfileProcessor())
+        .thenReturn((context, profile) -> emittedProfile.set(profile));
+    when(profilerSharedState.getResource()).thenReturn(RESOURCE);
+    when(profilerSharedState.getClock()).thenReturn(clock);
+
+    builder = new SdkProfileBuilder(profilerSharedState, SCOPE_INFO);
+  }
+
+  @Test
+  void emit_AllFields() {
+    Instant timestamp = Instant.now();
+    Instant observedTimestamp = Instant.now().plusNanos(100);
+
+    SpanContext spanContext =
+        SpanContext.create(
+            "33333333333333333333333333333333",
+            "7777777777777777",
+            TraceFlags.getSampled(),
+            TraceState.getDefault());
+
+    builder.setTimestamp(123, TimeUnit.SECONDS);
+    builder.setTimestamp(timestamp);
+    builder.setObservedTimestamp(456, TimeUnit.SECONDS);
+    builder.setObservedTimestamp(observedTimestamp);
+    builder.setAttribute(null, null);
+    builder.setAttribute(AttributeKey.stringKey("k1"), "v1");
+    builder.setAllAttributes(Attributes.builder().put("k2", "v2").put("k3", "v3").build());
+    builder.setContext(Span.wrap(spanContext).storeInContext(Context.root()));
+    builder.emit();
+    assertThat(emittedProfile.get().toProfileData())
+        .hasResource(RESOURCE)
+        .hasInstrumentationScope(SCOPE_INFO)
+        .hasTimestamp(TimeUnit.SECONDS.toNanos(timestamp.getEpochSecond()) + timestamp.getNano())
+        .hasObservedTimestamp(
+            TimeUnit.SECONDS.toNanos(observedTimestamp.getEpochSecond())
+                + observedTimestamp.getNano())
+        .hasAttributes(Attributes.builder().put("k1", "v1").put("k2", "v2").put("k3", "v3").build())
+        .hasSpanContext(spanContext);
+  }
+
+  @Test
+  void emit_NoFields() {
+    when(clock.now()).thenReturn(10L);
+
+    builder.emit();
+
+    assertThat(emittedProfile.get().toProfileData())
+        .hasResource(RESOURCE)
+        .hasInstrumentationScope(SCOPE_INFO)
+        .hasTimestamp(0L)
+        .hasObservedTimestamp(10L)
+        .hasAttributes(Attributes.empty())
+        .hasSpanContext(SpanContext.getInvalid());
+  }
+}
