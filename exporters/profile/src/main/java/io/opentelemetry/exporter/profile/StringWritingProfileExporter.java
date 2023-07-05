@@ -35,13 +35,18 @@ public class StringWritingProfileExporter implements ProfileExporter {
 
   private final boolean fold;
 
+  private final boolean framesOnly;
+
   /** Returns a new {@link StringWritingProfileExporter}. */
-  static StringWritingProfileExporter create(Consumer<String> consumer, boolean fold) {
-    return new StringWritingProfileExporter(consumer, fold);
+  static StringWritingProfileExporter create(
+      Consumer<String> consumer, boolean fold, boolean framesOnly) {
+    return new StringWritingProfileExporter(consumer, fold, framesOnly);
   }
 
-  private StringWritingProfileExporter(Consumer<String> consumer, boolean fold) {
+  private StringWritingProfileExporter(
+      Consumer<String> consumer, boolean fold, boolean framesOnly) {
     this.consumer = consumer;
+    this.framesOnly = framesOnly;
     this.fold = fold;
   }
 
@@ -105,22 +110,35 @@ public class StringWritingProfileExporter implements ProfileExporter {
   }
 
   protected void formatProfile(StringBuilder stringBuilder, ProfileData profile) {
-    InstrumentationScopeInfo instrumentationScopeInfo = profile.getInstrumentationScopeInfo();
-    stringBuilder
-        .append("Profile from StringWritingProfileExporter")
-        .append(": ")
-        .append(profile.getSpanContext().getTraceId())
-        .append(" ")
-        .append(profile.getSpanContext().getSpanId())
-        .append(" [scopeInfo: ")
-        .append(instrumentationScopeInfo.getName())
-        .append(":")
-        .append(
-            instrumentationScopeInfo.getVersion() == null
-                ? ""
-                : instrumentationScopeInfo.getVersion())
-        .append("] ")
-        .append(profile.getAttributes());
+    if (!framesOnly) {
+      InstrumentationScopeInfo instrumentationScopeInfo = profile.getInstrumentationScopeInfo();
+      stringBuilder
+          .append("Profile from StringWritingProfileExporter")
+          .append(": ")
+          .append(profile.getSpanContext().getTraceId())
+          .append(" ")
+          .append(profile.getSpanContext().getSpanId())
+          .append(" [scopeInfo: ")
+          .append(instrumentationScopeInfo.getName())
+          .append(":")
+          .append(
+              instrumentationScopeInfo.getVersion() == null
+                  ? ""
+                  : instrumentationScopeInfo.getVersion())
+          .append("] ")
+          .append(" frames: [");
+    }
+
+    for (int i = profile.getFrames().size() - 1; i >= 0; i--) {
+      stringBuilder.append(profile.getFrames().get(i));
+      if (i > 0) {
+        stringBuilder.append(";");
+      }
+    }
+
+    if (!framesOnly) {
+      stringBuilder.append("]").append(profile.getAttributes());
+    }
   }
 
   @Override

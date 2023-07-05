@@ -11,6 +11,7 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.profile.data.ProfileData;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
 @AutoValue
@@ -25,6 +26,7 @@ abstract class SdkProfileData implements ProfileData {
       InstrumentationScopeInfo instrumentationScopeInfo,
       long epochNanos,
       long observedEpochNanos,
+      List<String> frames,
       SpanContext spanContext,
       Attributes attributes,
       int totalAttributeCount) {
@@ -34,6 +36,7 @@ abstract class SdkProfileData implements ProfileData {
         instrumentationScopeInfo,
         epochNanos,
         observedEpochNanos,
+        frames,
         spanContext,
         attributes,
         totalAttributeCount);

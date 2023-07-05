@@ -13,6 +13,8 @@ import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.AttributesMap;
 import io.opentelemetry.sdk.profile.data.ProfileData;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.Collections;
+import java.util.List;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -24,6 +26,7 @@ class SdkReadWriteProfile implements ReadWriteProfile {
   private final InstrumentationScopeInfo instrumentationScopeInfo;
   private final long timestampEpochNanos;
   private final long observedTimestampEpochNanos;
+  @Nullable private final List<String> frames;
   private final SpanContext spanContext;
   private final Object lock = new Object();
 
@@ -37,6 +40,7 @@ class SdkReadWriteProfile implements ReadWriteProfile {
       InstrumentationScopeInfo instrumentationScopeInfo,
       long timestampEpochNanos,
       long observedTimestampEpochNanos,
+      @Nullable List<String> frames,
       SpanContext spanContext,
       @Nullable AttributesMap attributes) {
     this.profileLimits = profileLimits;
@@ -44,6 +48,7 @@ class SdkReadWriteProfile implements ReadWriteProfile {
     this.instrumentationScopeInfo = instrumentationScopeInfo;
     this.timestampEpochNanos = timestampEpochNanos;
     this.observedTimestampEpochNanos = observedTimestampEpochNanos;
+    this.frames = frames;
     this.spanContext = spanContext;
     this.attributes = attributes;
   }
@@ -55,6 +60,7 @@ class SdkReadWriteProfile implements ReadWriteProfile {
       InstrumentationScopeInfo instrumentationScopeInfo,
       long timestampEpochNanos,
       long observedTimestampEpochNanos,
+      @Nullable List<String> frames,
       SpanContext spanContext,
       @Nullable AttributesMap attributes) {
     return new SdkReadWriteProfile(
@@ -63,6 +69,7 @@ class SdkReadWriteProfile implements ReadWriteProfile {
         instrumentationScopeInfo,
         timestampEpochNanos,
         observedTimestampEpochNanos,
+        frames,
         spanContext,
         attributes);
   }
@@ -101,6 +108,7 @@ class SdkReadWriteProfile implements ReadWriteProfile {
           instrumentationScopeInfo,
           timestampEpochNanos,
           observedTimestampEpochNanos,
+          frames == null ? Collections.emptyList() : frames,
           spanContext,
           getImmutableAttributes(),
           attributes == null ? 0 : attributes.getTotalAddedValues());

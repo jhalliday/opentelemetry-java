@@ -97,10 +97,74 @@ public class StringWritingProfileExporterTest {
   }
 
   @Test
+  void exportFramesAndMetadata() {
+
+    List<String> exportedLines = new ArrayList<>();
+    StringWritingProfileExporter exporter =
+        StringWritingProfileExporter.builder()
+            .setFramesOnly(false)
+            .setConsumer(exportedLines::add)
+            .build();
+
+    List<ProfileData> profiles = new ArrayList<>();
+    List<String> frames = new ArrayList<>();
+    frames.add("Frame1");
+    frames.add("Frame2");
+    TestProfileData profileOne =
+        TestProfileData.builder()
+            .setAttributes(Attributes.of(AttributeKey.stringKey("test"), "ProfileOne"))
+            .setFrames(frames)
+            .build();
+    profiles.add(profileOne);
+
+    try {
+      exporter.export(profiles);
+    } finally {
+      exporter.shutdown();
+    }
+
+    assertEquals(1, exportedLines.size());
+    assertThat(exportedLines.get(0).contains("Frame1")).isTrue();
+    assertThat(exportedLines.get(0).contains("ProfileOne")).isTrue();
+  }
+
+  @Test
+  void exportFramesOnly() {
+
+    List<String> exportedLines = new ArrayList<>();
+    StringWritingProfileExporter exporter =
+        StringWritingProfileExporter.builder()
+            .setFramesOnly(true)
+            .setConsumer(exportedLines::add)
+            .build();
+
+    List<ProfileData> profiles = new ArrayList<>();
+    List<String> frames = new ArrayList<>();
+    frames.add("Frame1");
+    frames.add("Frame2");
+    TestProfileData profileOne =
+        TestProfileData.builder()
+            .setAttributes(Attributes.of(AttributeKey.stringKey("test"), "ProfileOne"))
+            .setFrames(frames)
+            .build();
+    profiles.add(profileOne);
+
+    try {
+      exporter.export(profiles);
+    } finally {
+      exporter.shutdown();
+    }
+
+    assertEquals(1, exportedLines.size());
+    assertThat(exportedLines.get(0).contains("Frame1")).isTrue();
+    assertThat(exportedLines.get(0).contains("ProfileOne")).isFalse();
+  }
+
+  @Test
   @SuppressWarnings("SystemOut")
   void shutdown() {
 
-    exporter = StringWritingProfileExporter.create(System.out::println, false);
+    exporter = StringWritingProfileExporter.create(System.out::println, false, false);
 
     assertThat(exporter.shutdown().isSuccess()).isTrue();
     assertThat(exporter.export(Collections.emptyList()).join(10, TimeUnit.SECONDS).isSuccess())

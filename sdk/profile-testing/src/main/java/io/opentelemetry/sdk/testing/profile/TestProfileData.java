@@ -12,6 +12,8 @@ import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.profile.data.ProfileData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.time.Instant;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.concurrent.Immutable;
 
@@ -27,6 +29,7 @@ public abstract class TestProfileData implements ProfileData {
         .setInstrumentationScopeInfo(InstrumentationScopeInfo.empty())
         .setTimestamp(0, TimeUnit.NANOSECONDS)
         .setObservedTimestamp(0, TimeUnit.NANOSECONDS)
+        .setFrames(Collections.emptyList())
         .setSpanContext(SpanContext.getInvalid())
         .setAttributes(Attributes.empty())
         .setTotalAttributeCount(0);
@@ -103,6 +106,8 @@ public abstract class TestProfileData implements ProfileData {
      * <p>The {@code observedTimestamp} is the time at which the profile was observed.
      */
     abstract Builder setObservedTimestampEpochNanos(long epochNanos);
+
+    public abstract Builder setFrames(List<String> frames);
 
     /** Set the span context. */
     public abstract Builder setSpanContext(SpanContext spanContext);

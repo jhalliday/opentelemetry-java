@@ -12,6 +12,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.AttributesMap;
 import java.time.Instant;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 
@@ -24,6 +25,9 @@ final class SdkProfileBuilder implements ProfileBuilder {
   private final InstrumentationScopeInfo instrumentationScopeInfo;
   private long timestampEpochNanos;
   private long observedTimestampEpochNanos;
+
+  @Nullable public List<String> frames;
+
   @Nullable private Context context;
   @Nullable private AttributesMap attributes;
 
@@ -57,6 +61,12 @@ final class SdkProfileBuilder implements ProfileBuilder {
   public SdkProfileBuilder setObservedTimestamp(Instant instant) {
     this.observedTimestampEpochNanos =
         TimeUnit.SECONDS.toNanos(instant.getEpochSecond()) + instant.getNano();
+    return this;
+  }
+
+  @Override
+  public ProfileBuilder setFrames(List<String> frames) {
+    this.frames = frames;
     return this;
   }
 
@@ -100,6 +110,7 @@ final class SdkProfileBuilder implements ProfileBuilder {
                 instrumentationScopeInfo,
                 timestampEpochNanos,
                 observedTimestampEpochNanos,
+                frames,
                 Span.fromContext(context).getSpanContext(),
                 attributes));
   }

@@ -8,6 +8,7 @@ package io.opentelemetry.api.profile;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.context.Context;
 import java.time.Instant;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 class DefaultProfiler implements Profiler {
@@ -47,6 +48,11 @@ class DefaultProfiler implements Profiler {
 
     @Override
     public ProfileBuilder setObservedTimestamp(Instant instant) {
+      return this;
+    }
+
+    @Override
+    public ProfileBuilder setFrames(List<String> frames) {
       return this;
     }
 

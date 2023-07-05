@@ -10,6 +10,7 @@ import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.profile.ProfileLimits;
 import io.opentelemetry.sdk.resources.Resource;
+import java.util.List;
 import javax.annotation.concurrent.Immutable;
 
 /**
@@ -31,6 +32,16 @@ public interface ProfileData {
 
   /** Returns the timestamp at which the profile was observed, in epoch nanos. */
   long getObservedTimestampEpochNanos();
+
+  /**
+   * Returns the stack frames for this profile.
+   *
+   * <p>In a non-empty list, the zeroth element is the last called function and the final element is
+   * the Thread entry point. This ordering is consistent with {@code Throwable.getStackTrace()}
+   *
+   * @return The stack frames, or an empty List.
+   */
+  List<String> getFrames();
 
   /** Return the span context for this profile, or {@link SpanContext#getInvalid()} if unset. */
   SpanContext getSpanContext();

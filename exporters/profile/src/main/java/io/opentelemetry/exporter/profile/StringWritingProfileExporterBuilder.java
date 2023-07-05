@@ -15,6 +15,8 @@ public class StringWritingProfileExporterBuilder {
 
   private boolean fold = false;
 
+  private boolean framesOnly = false;
+
   StringWritingProfileExporterBuilder() {}
 
   /**
@@ -41,11 +43,23 @@ public class StringWritingProfileExporterBuilder {
   }
 
   /**
+   * Sets the output verbosity.
+   *
+   * @param framesOnly true for a short format containing only the frame information, false for a
+   *     more verbose format with metadata.
+   * @return this.
+   */
+  public StringWritingProfileExporterBuilder setFramesOnly(boolean framesOnly) {
+    this.framesOnly = framesOnly;
+    return this;
+  }
+
+  /**
    * Constructs a new instance of the exporter based on the builder's values.
    *
    * @return a new exporter's instance.
    */
   public StringWritingProfileExporter build() {
-    return StringWritingProfileExporter.create(consumer, fold);
+    return StringWritingProfileExporter.create(consumer, fold, framesOnly);
   }
 }

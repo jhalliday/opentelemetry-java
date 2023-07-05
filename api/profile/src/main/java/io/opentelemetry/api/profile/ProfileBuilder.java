@@ -9,6 +9,7 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.context.Context;
 import java.time.Instant;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -54,6 +55,14 @@ public interface ProfileBuilder {
    * thread).
    */
   ProfileBuilder setObservedTimestamp(Instant instant);
+
+  /**
+   * Sets the stack frames for this profile.
+   *
+   * <p>In a non-empty list, the zeroth element is the last called function and the final element is
+   * the Thread entry point. This ordering is consistent with {@code Throwable.getStackTrace()}
+   */
+  ProfileBuilder setFrames(List<String> frames);
 
   /** Set the context. */
   ProfileBuilder setContext(Context context);
