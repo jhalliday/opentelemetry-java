@@ -38,6 +38,8 @@ public final class OtlpConfigUtil {
   public static final String DATA_TYPE_METRICS = "metrics";
   public static final String DATA_TYPE_LOGS = "logs";
 
+  public static final String DATA_TYPE_PROFILES = "profiles";
+
   public static final String PROTOCOL_GRPC = "grpc";
   public static final String PROTOCOL_HTTP_PROTOBUF = "http/protobuf";
 
@@ -269,6 +271,8 @@ public final class OtlpConfigUtil {
         return "v1/traces";
       case DATA_TYPE_LOGS:
         return "v1/logs";
+      case DATA_TYPE_PROFILES:
+        return "v1/profile";
       default:
         throw new IllegalArgumentException(
             "Cannot determine signal path for unrecognized data type: " + dataType);

@@ -33,6 +33,7 @@ import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceResponse;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceResponse;
+import io.opentelemetry.proto.collector.profile.v1.ExportProfileServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -124,6 +125,12 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
                   ExportLogsServiceRequest::parseFrom,
                   ExportLogsServiceRequest::getResourceLogsList,
                   ExportLogsServiceResponse.getDefaultInstance().toByteArray()));
+          sb.service(
+              "/opentelemetry.proto.collector.profile.v1.ProfileService/Export",
+              new CollectorService<>(
+                  ExportProfileServiceRequest::parseFrom,
+                  ExportProfileServiceRequest::getResourceProfilesList,
+                  ExportProfileServiceRequest.getDefaultInstance().toByteArray()));
 
           sb.http(0);
           sb.https(0);
@@ -547,6 +554,9 @@ public abstract class AbstractGrpcTelemetryExporterTest<T, U extends Message> {
         break;
       case "log":
         envVar = "OTEL_LOGS_EXPORTER";
+        break;
+      case "profile":
+        envVar = "OTEL_PROFILE_EXPORTER";
         break;
       default:
         throw new AssertionError();

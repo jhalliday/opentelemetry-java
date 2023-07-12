@@ -13,6 +13,7 @@ otelJava.moduleName.set("io.opentelemetry.exporter.internal.otlp")
 
 val versions: Map<String, String> by project
 dependencies {
+  testImplementation(project(mapOf("path" to ":sdk:profile-testing")))
   protoSource("io.opentelemetry.proto:opentelemetry-proto:${versions["io.opentelemetry.proto"]}")
 
   api(project(":exporters:common"))
@@ -45,6 +46,7 @@ wire {
     "opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest",
     "opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest",
     "opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest",
+    "opentelemetry.proto.collector.profile.v1.ExportProfileServiceRequest",
   )
 
   custom {

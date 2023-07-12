@@ -23,6 +23,8 @@ dependencies {
   testImplementation("io.grpc:grpc-stub")
 
   testImplementation(project(":exporters:otlp:testing-internal"))
+  implementation(project(":exporters:otlp:profile"))
+
   testImplementation("com.linecorp.armeria:armeria-junit5")
   testImplementation("com.google.api.grpc:proto-google-common-protos")
   testImplementation("com.squareup.okhttp3:okhttp-tls")

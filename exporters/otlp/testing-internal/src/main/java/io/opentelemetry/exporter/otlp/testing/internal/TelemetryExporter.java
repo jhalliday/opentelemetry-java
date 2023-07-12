@@ -10,6 +10,8 @@ import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.export.MetricExporter;
+import io.opentelemetry.sdk.profile.data.ProfileData;
+import io.opentelemetry.sdk.profile.export.ProfileExporter;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Collection;
@@ -66,6 +68,26 @@ public interface TelemetryExporter<T> {
 
       @Override
       public CompletableResultCode export(Collection<LogRecordData> items) {
+        return exporter.export(items);
+      }
+
+      @Override
+      public CompletableResultCode shutdown() {
+        return exporter.shutdown();
+      }
+    };
+  }
+
+  /** Wraps a ProfileExporter. */
+  static TelemetryExporter<ProfileData> wrap(ProfileExporter exporter) {
+    return new TelemetryExporter<ProfileData>() {
+      @Override
+      public Object unwrap() {
+        return exporter;
+      }
+
+      @Override
+      public CompletableResultCode export(Collection<ProfileData> items) {
         return exporter.export(items);
       }
 

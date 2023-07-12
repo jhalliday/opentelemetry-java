@@ -118,6 +118,8 @@ public final class ManagedChannelTelemetryExporterBuilder<T>
       grpcServiceName = "opentelemetry.proto.collector.metrics.v1.MetricsService";
     } else if (delegate instanceof GrpcSpanExporterBuilderWrapper) {
       grpcServiceName = "opentelemetry.proto.collector.trace.v1.TraceService";
+    } else if (delegate instanceof GrpcProfileExporterBuilderWrapper) {
+      grpcServiceName = "opentelemetry.proto.collector.profile.v1.ProfileService";
     } else {
       throw new IllegalStateException("Can't happen");
     }

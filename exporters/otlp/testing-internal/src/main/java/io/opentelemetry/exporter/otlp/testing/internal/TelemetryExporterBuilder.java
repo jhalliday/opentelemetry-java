@@ -10,9 +10,11 @@ import io.opentelemetry.exporter.internal.auth.Authenticator;
 import io.opentelemetry.exporter.internal.retry.RetryPolicy;
 import io.opentelemetry.exporter.otlp.logs.OtlpGrpcLogRecordExporterBuilder;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporterBuilder;
+import io.opentelemetry.exporter.otlp.profile.OtlpGrpcProfileExporterBuilder;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporterBuilder;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.metrics.data.MetricData;
+import io.opentelemetry.sdk.profile.data.ProfileData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
@@ -31,6 +33,10 @@ public interface TelemetryExporterBuilder<T> {
 
   static TelemetryExporterBuilder<LogRecordData> wrap(OtlpGrpcLogRecordExporterBuilder builder) {
     return new GrpcLogRecordExporterBuilderWrapper(builder);
+  }
+
+  static TelemetryExporterBuilder<ProfileData> wrap(OtlpGrpcProfileExporterBuilder builder) {
+    return new GrpcProfileExporterBuilderWrapper(builder);
   }
 
   TelemetryExporterBuilder<T> setEndpoint(String endpoint);

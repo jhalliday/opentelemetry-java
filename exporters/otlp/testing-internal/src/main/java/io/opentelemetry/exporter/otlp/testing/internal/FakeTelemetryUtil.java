@@ -20,8 +20,10 @@ import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableLongPointData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableMetricData;
 import io.opentelemetry.sdk.metrics.internal.data.ImmutableSumData;
+import io.opentelemetry.sdk.profile.data.ProfileData;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.testing.logs.TestLogRecordData;
+import io.opentelemetry.sdk.testing.profile.TestProfileData;
 import io.opentelemetry.sdk.testing.trace.TestSpanData;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
@@ -90,6 +92,21 @@ public class FakeTelemetryUtil {
         .setAttributes(Attributes.builder().put("key", "value").build())
         .setSeverity(Severity.INFO)
         .setSeverityText(Severity.INFO.name())
+        .setTimestamp(Instant.now())
+        .setObservedTimestamp(Instant.now().plusNanos(100))
+        .build();
+  }
+
+  /** Generate a fake {@link ProfileData}. */
+  public static ProfileData generateFakeProfileData() {
+    return TestProfileData.builder()
+        .setResource(Resource.getDefault())
+        .setInstrumentationScopeInfo(
+            InstrumentationScopeInfo.builder("testLib")
+                .setVersion("1.0")
+                .setSchemaUrl("http://url")
+                .build())
+        .setAttributes(Attributes.builder().put("key", "value").build())
         .setTimestamp(Instant.now())
         .setObservedTimestamp(Instant.now().plusNanos(100))
         .build();

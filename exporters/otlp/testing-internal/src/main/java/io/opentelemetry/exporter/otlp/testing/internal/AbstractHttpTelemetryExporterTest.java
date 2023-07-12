@@ -36,6 +36,7 @@ import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceRequest;
 import io.opentelemetry.proto.collector.logs.v1.ExportLogsServiceResponse;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceRequest;
 import io.opentelemetry.proto.collector.metrics.v1.ExportMetricsServiceResponse;
+import io.opentelemetry.proto.collector.profile.v1.ExportProfileServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest;
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse;
 import io.opentelemetry.sdk.common.CompletableResultCode;
@@ -129,6 +130,12 @@ public abstract class AbstractHttpTelemetryExporterTest<T, U extends Message> {
                   ExportLogsServiceRequest::parseFrom,
                   ExportLogsServiceRequest::getResourceLogsList,
                   ExportLogsServiceResponse.getDefaultInstance().toByteArray()));
+          sb.service(
+              "/v1/profile",
+              new CollectorService<>(
+                  ExportProfileServiceRequest::parseFrom,
+                  ExportProfileServiceRequest::getResourceProfilesList,
+                  ExportProfileServiceRequest.getDefaultInstance().toByteArray()));
 
           sb.http(0);
           sb.https(0);

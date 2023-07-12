@@ -23,6 +23,9 @@ final class GrpcExporterUtil {
       case "log":
         envVar = "OTEL_LOGS_EXPORTER";
         break;
+      case "profile":
+        envVar = "OTEL_PROFILE_EXPORTER";
+        break;
       default:
         throw new IllegalStateException(
             "Unrecognized type, this is a programming bug in the OpenTelemetry SDK");
