@@ -6,7 +6,7 @@
 package io.opentelemetry.sdk.profile;
 
 import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.sdk.profile.data.ProfileData;
+import io.opentelemetry.sdk.profile.data.ProfileContainerData;
 
 /** A profile that can be read from and written to. */
 public interface ReadWriteProfile {
@@ -21,8 +21,8 @@ public interface ReadWriteProfile {
 
   // TODO: add additional setters
 
-  /** Return an immutable {@link ProfileData} instance representing this profile. */
-  ProfileData toProfileData();
+  /** Return an immutable {@link ProfileContainerData} instance representing this profile. */
+  ProfileContainerData toProfileData();
 
   // TODO: add additional accessors.
 

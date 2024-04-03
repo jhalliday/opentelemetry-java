@@ -1,0 +1,147 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+package io.opentelemetry.exporter.internal.otlp.profile;
+
+import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
+import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
+import io.opentelemetry.exporter.internal.marshal.ProtoEnumInfo;
+import io.opentelemetry.exporter.internal.marshal.Serializer;
+import io.opentelemetry.proto.profiles.v1.alternatives.pprofextended.internal.BuildIdKind;
+import io.opentelemetry.proto.profiles.v1.alternatives.pprofextended.internal.Mapping;
+import io.opentelemetry.sdk.profile.data.MappingData;
+import java.io.IOException;
+
+final class MappingMarshaler extends MarshalerWithSize {
+
+  private final long id;
+  private final long memoryStart;
+  private final long memoryLimit;
+  private final long fileOffset;
+  private final int filenameIndex;
+  private final int buildIdIndex;
+  private final ProtoEnumInfo buildIdKind;
+  private final long[] attributeIndices;
+  private final boolean hasFunctions;
+  private final boolean hasFilenames;
+  private final boolean hasLineNumbers;
+  private final boolean hasInlineFrames;
+
+  static MappingMarshaler create(MappingData mappingData) {
+    ProtoEnumInfo buildKind = BuildIdKind.BUILD_ID_LINKER;
+    switch (mappingData.getBuildIdKind()) {
+      case LINKER:
+        buildKind = BuildIdKind.BUILD_ID_LINKER;
+        break;
+      case BINARY_HASH:
+        buildKind = BuildIdKind.BUILD_ID_BINARY_HASH;
+        break;
+    }
+    @SuppressWarnings("deprecation") // getId retained for compatibility
+    MappingMarshaler mappingMarshaler = new MappingMarshaler(
+        mappingData.getId(),
+        mappingData.getMemoryStart(),
+        mappingData.getMemoryLimit(),
+        mappingData.getFileOffset(),
+        mappingData.getFilenameIndex(),
+        mappingData.getBuildIdIndex(),
+        buildKind,
+        mappingData.getAttributeIndices(),
+        mappingData.hasFunctions(),
+        mappingData.hasFilenames(),
+        mappingData.hasLineNumbers(),
+        mappingData.hasInlineFrames()
+    );
+    return mappingMarshaler;
+  }
+
+  private MappingMarshaler(
+      long id,
+      long memoryStart,
+      long memoryLimit,
+      long fileOffset,
+      int filenameIndex,
+      int buildIdIndex,
+      ProtoEnumInfo buildIdKind,
+      long[] attributeIndices,
+      boolean hasFunctions,
+      boolean hasFilenames,
+      boolean hasLineNumbers,
+      boolean hasInlineFrames
+  ) {
+    super(calculateSize(
+        id,
+        memoryStart,
+        memoryLimit,
+        fileOffset,
+        filenameIndex,
+        buildIdIndex,
+        buildIdKind,
+        attributeIndices,
+        hasFunctions,
+        hasFilenames,
+        hasLineNumbers,
+        hasInlineFrames
+    ));
+    this.id = id;
+    this.memoryStart = memoryStart;
+    this.memoryLimit = memoryLimit;
+    this.fileOffset = fileOffset;
+    this.filenameIndex = filenameIndex;
+    this.buildIdIndex = buildIdIndex;
+    this.buildIdKind = buildIdKind;
+    this.attributeIndices = attributeIndices;
+    this.hasFunctions = hasFunctions;
+    this.hasFilenames = hasFilenames;
+    this.hasLineNumbers = hasLineNumbers;
+    this.hasInlineFrames = hasInlineFrames;
+  }
+
+  @Override
+  protected void writeTo(Serializer output) throws IOException {
+    output.serializeUInt64(Mapping.ID, id);
+    output.serializeUInt64(Mapping.MEMORY_START, memoryStart);
+    output.serializeUInt64(Mapping.MEMORY_LIMIT, memoryLimit);
+    output.serializeUInt64(Mapping.FILE_OFFSET, fileOffset);
+    output.serializeInt64(Mapping.FILENAME, filenameIndex);
+    output.serializeInt64(Mapping.BUILD_ID, buildIdIndex);
+    output.serializeEnum(Mapping.BUILD_ID_KIND, buildIdKind);
+    output.serializeRepeatedUInt64(Mapping.ATTRIBUTES, attributeIndices);
+    output.serializeBool(Mapping.HAS_FUNCTIONS, hasFunctions);
+    output.serializeBool(Mapping.HAS_FILENAMES, hasFilenames);
+    output.serializeBool(Mapping.HAS_LINE_NUMBERS, hasLineNumbers);
+    output.serializeBool(Mapping.HAS_INLINE_FRAMES, hasInlineFrames);
+  }
+
+  private static int calculateSize(
+      long id,
+      long memoryStart,
+      long memoryLimit,
+      long fileOffset,
+      int filenameIndex,
+      int buildIdIndex,
+      ProtoEnumInfo buildIdKind,
+      long[] attributeIndices,
+      boolean hasFunctions,
+      boolean hasFilenames,
+      boolean hasLineNumbers,
+      boolean hasInlineFrames
+  ) {
+    int size = 0;
+    size += MarshalerUtil.sizeUInt64(Mapping.ID, id);
+    size += MarshalerUtil.sizeUInt64(Mapping.MEMORY_START, memoryStart);
+    size += MarshalerUtil.sizeUInt64(Mapping.MEMORY_LIMIT, memoryLimit);
+    size += MarshalerUtil.sizeUInt64(Mapping.FILE_OFFSET, fileOffset);
+    size += MarshalerUtil.sizeInt64(Mapping.FILENAME, filenameIndex);
+    size += MarshalerUtil.sizeInt64(Mapping.BUILD_ID, buildIdIndex);
+    size += MarshalerUtil.sizeEnum(Mapping.BUILD_ID_KIND, buildIdKind);
+    size += MarshalerUtil.sizeRepeatedUInt64(Mapping.ATTRIBUTES, attributeIndices);
+    size += MarshalerUtil.sizeBool(Mapping.HAS_FUNCTIONS, hasFunctions);
+    size += MarshalerUtil.sizeBool(Mapping.HAS_FILENAMES, hasFilenames);
+    size += MarshalerUtil.sizeBool(Mapping.HAS_LINE_NUMBERS, hasLineNumbers);
+    size += MarshalerUtil.sizeBool(Mapping.HAS_INLINE_FRAMES, hasInlineFrames);
+    return size;
+  }
+}

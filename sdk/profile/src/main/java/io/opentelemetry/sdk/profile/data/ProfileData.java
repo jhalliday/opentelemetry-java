@@ -6,55 +6,35 @@
 package io.opentelemetry.sdk.profile.data;
 
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.profile.ProfileLimits;
-import io.opentelemetry.sdk.resources.Resource;
-import java.util.List;
 import javax.annotation.concurrent.Immutable;
+import java.util.List;
 
 /**
- * TODO point to profile spec once it exists... Profile definition as described in <a
- * href="https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/...md">OpenTelemetry
- * Profiling Data Model</a>.
+ * Represents a complete profile, including sample types, samples,
+ * mappings to binaries, locations, functions, string table, and additional metadata.
+ * @see "pprofextended.proto::Profile"
  */
 @Immutable
 public interface ProfileData {
 
-  /** Returns the resource of this profile. */
-  Resource getResource();
+  // TODO docs
 
-  /** Returns the instrumentation scope that generated this profile. */
-  InstrumentationScopeInfo getInstrumentationScopeInfo();
-
-  /** Returns the timestamp at which the profile occurred, in epoch nanos. */
-  long getTimestampEpochNanos();
-
-  /** Returns the timestamp at which the profile was observed, in epoch nanos. */
-  long getObservedTimestampEpochNanos();
-
-  /**
-   * Returns the stack frames for this profile.
-   *
-   * <p>In a non-empty list, the zeroth element is the last called function and the final element is
-   * the Thread entry point. This ordering is consistent with {@code Throwable.getStackTrace()}
-   *
-   * @return The stack frames, or an empty List.
-   */
-  List<String> getFrames();
-
-  /** Return the span context for this profile, or {@link SpanContext#getInvalid()} if unset. */
-  SpanContext getSpanContext();
-
-  /** Returns the attributes for this profile, or {@link Attributes#empty()} if unset. */
+  List<ValueTypeData> getSampleTypes();
+  List<SampleData> getSamples();
+  List<MappingData> getMappings();
+  List<LocationData> getLocations();
+  long[] getLocationIndices();
+  List<FunctionData> getFunctions();
   Attributes getAttributes();
-
-  /**
-   * Returns the total number of attributes that were recorded on this profile.
-   *
-   * <p>This number may be larger than the number of attributes that are attached to this profile,
-   * if the total number recorded was greater than the configured maximum value. See {@link
-   * ProfileLimits#getMaxNumberOfAttributes()}.
-   */
-  int getTotalAttributeCount();
+  List<AttributeUnitData> getAttributeUnits();
+  List<LinkData> getLinks();
+  List<String> getStringTable();
+  long getDropFrames();
+  long getKeepFrames();
+  long getTimeNanos();
+  long getDurationNanos();
+  ValueTypeData getPeriodType();
+  long getPeriod();
+  long[] getComment();
+  long getDefaultSampleType();
 }

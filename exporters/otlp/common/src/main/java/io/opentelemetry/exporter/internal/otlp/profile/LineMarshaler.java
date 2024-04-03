@@ -1,0 +1,72 @@
+/*
+ * Copyright The OpenTelemetry Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+package io.opentelemetry.exporter.internal.otlp.profile;
+
+import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
+import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
+import io.opentelemetry.exporter.internal.marshal.Serializer;
+import io.opentelemetry.proto.profiles.v1.alternatives.pprofextended.internal.Line;
+import io.opentelemetry.sdk.profile.data.LineData;
+import java.io.IOException;
+import java.util.List;
+import java.util.function.Consumer;
+
+final class LineMarshaler extends MarshalerWithSize {
+
+  private static final LineMarshaler[] EMPTY_REPEATED = new LineMarshaler[0];
+
+  private final int functionIndex;
+  private final int line;
+  private final int column;
+
+  static LineMarshaler create(LineData lineData) {
+    LineMarshaler lineMarshaler = new LineMarshaler(
+        lineData.getFunctionIndex(),
+        lineData.getLine(),
+        lineData.getColumn()
+    );
+    return lineMarshaler;
+  }
+
+  public static LineMarshaler[] createRepeated(List<LineData> lines) {
+    if (lines.isEmpty()) {
+      return EMPTY_REPEATED;
+    }
+
+    LineMarshaler[] lineMarshalers = new LineMarshaler[lines.size()];
+    lines.forEach(lineData -> new Consumer<LineData>() {
+      int index = 0;
+
+      @Override
+      public void accept(LineData lineData) {
+        lineMarshalers[index++] = LineMarshaler.create(lineData);
+      }
+    });
+    return lineMarshalers;
+  }
+
+  private LineMarshaler(int functionIndex, int line, int column) {
+    super(calculateSize(functionIndex, line, column));
+    this.functionIndex = functionIndex;
+    this.line = line;
+    this.column = column;
+  }
+
+  @Override
+  protected void writeTo(Serializer output) throws IOException {
+    output.serializeUInt64(Line.FUNCTION_INDEX, functionIndex);
+    output.serializeInt64(Line.LINE, line);
+    output.serializeInt64(Line.COLUMN, column);
+  }
+
+  private static int calculateSize(int functionIndex, int line, int column) {
+    int size = 0;
+    size += MarshalerUtil.sizeUInt64(Line.FUNCTION_INDEX, functionIndex);
+    size += MarshalerUtil.sizeInt64(Line.LINE, line);
+    size += MarshalerUtil.sizeInt64(Line.COLUMN, column);
+    return size;
+  }
+}

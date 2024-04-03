@@ -11,7 +11,7 @@ import io.opentelemetry.api.internal.GuardedBy;
 import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
 import io.opentelemetry.sdk.internal.AttributesMap;
-import io.opentelemetry.sdk.profile.data.ProfileData;
+import io.opentelemetry.sdk.profile.data.ProfileContainerData;
 import io.opentelemetry.sdk.resources.Resource;
 import java.util.Collections;
 import java.util.List;
@@ -24,10 +24,12 @@ class SdkReadWriteProfile implements ReadWriteProfile {
   private final ProfileLimits profileLimits;
   private final Resource resource;
   private final InstrumentationScopeInfo instrumentationScopeInfo;
+
   private final long timestampEpochNanos;
   private final long observedTimestampEpochNanos;
   @Nullable private final List<String> frames;
   private final SpanContext spanContext;
+
   private final Object lock = new Object();
 
   @GuardedBy("lock")
@@ -101,9 +103,9 @@ class SdkReadWriteProfile implements ReadWriteProfile {
   }
 
   @Override
-  public ProfileData toProfileData() {
+  public ProfileContainerData toProfileData() {
     synchronized (lock) {
-      return SdkProfileData.create(
+      return SdkProfileContainerData.create(
           resource,
           instrumentationScopeInfo,
           timestampEpochNanos,

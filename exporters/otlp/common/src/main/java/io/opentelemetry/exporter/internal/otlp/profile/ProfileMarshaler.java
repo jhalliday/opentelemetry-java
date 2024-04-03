@@ -5,82 +5,199 @@
 
 package io.opentelemetry.exporter.internal.otlp.profile;
 
-import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.api.trace.SpanId;
-import io.opentelemetry.api.trace.TraceId;
 import io.opentelemetry.exporter.internal.marshal.MarshalerUtil;
 import io.opentelemetry.exporter.internal.marshal.MarshalerWithSize;
 import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.exporter.internal.otlp.KeyValueMarshaler;
-import io.opentelemetry.proto.profile.v1.internal.Profile;
+import io.opentelemetry.proto.profiles.v1.alternatives.pprofextended.internal.Profile;
 import io.opentelemetry.sdk.profile.data.ProfileData;
 import java.io.IOException;
-import javax.annotation.Nullable;
+import java.nio.charset.StandardCharsets;
 
 final class ProfileMarshaler extends MarshalerWithSize {
-  private static final String INVALID_TRACE_ID = TraceId.getInvalid();
-  private static final String INVALID_SPAN_ID = SpanId.getInvalid();
 
-  private final long timeUnixNano;
-  private final long observedTimeUnixNano;
+  private final ValueTypeMarshaler[] sampleTypeMarshalers;
+  private final SampleMarshaler[] sampleMarshalers;
+  private final MappingMarshaler[] mappingMarshalers;
+  private final LocationMarshaler[] locationMarshalers;
+  private final long[] locationIndices;
+  private final FunctionMarshaler[] functionMarshalers;
   private final KeyValueMarshaler[] attributeMarshalers;
-  @Nullable private final String traceId;
-  @Nullable private final String spanId;
+  private final AttributeUnitMarshaler[] attributeUnitMarshalers;
+  private final LinkMarshaler[] linkMarshalers;
+  private final String[] stringTable;
+  private final long dropFrames;
+  private final long keepFrames;
+  private final long timeNanos;
+  private final long durationNanos;
+  private final ValueTypeMarshaler periodTypeMarshaler;
+  private final long period;
+  private final long[] comment;
+  private final long defaultSampleType;
 
   static ProfileMarshaler create(ProfileData profileData) {
-    KeyValueMarshaler[] attributeMarshalers =
-        KeyValueMarshaler.createRepeated(profileData.getAttributes());
 
-    SpanContext spanContext = profileData.getSpanContext();
+    // TODO
+    ValueTypeMarshaler[] sampleTypeMarshalers = new ValueTypeMarshaler[0];
+    SampleMarshaler[] sampleMarshalers = new SampleMarshaler[0];
+    MappingMarshaler[] mappingMarshalers = new MappingMarshaler[0];
+    LocationMarshaler[] locationMarshalers = new LocationMarshaler[0];
+    FunctionMarshaler[] functionMarshalers = new FunctionMarshaler[0];
+    KeyValueMarshaler[] attributeMarshalers = new KeyValueMarshaler[0];
+    AttributeUnitMarshaler[] attributeUnitsMarshalers = new AttributeUnitMarshaler[0];
+    LinkMarshaler[] linkMarshalers = new LinkMarshaler[0];
+    ValueTypeMarshaler periodTypeMarshaler = ValueTypeMarshaler.create(profileData.getPeriodType());
+
     return new ProfileMarshaler(
-        profileData.getTimestampEpochNanos(),
-        profileData.getObservedTimestampEpochNanos(),
+        sampleTypeMarshalers,
+        sampleMarshalers,
+        mappingMarshalers,
+        locationMarshalers,
+        profileData.getLocationIndices(),
+        functionMarshalers,
         attributeMarshalers,
-        spanContext.getTraceId().equals(INVALID_TRACE_ID) ? null : spanContext.getTraceId(),
-        spanContext.getSpanId().equals(INVALID_SPAN_ID) ? null : spanContext.getSpanId());
+        attributeUnitsMarshalers,
+        linkMarshalers,
+        profileData.getStringTable().toArray(new String[] {}),
+        profileData.getDropFrames(),
+        profileData.getKeepFrames(),
+        profileData.getTimeNanos(),
+        profileData.getDurationNanos(),
+        periodTypeMarshaler,
+        profileData.getPeriod(),
+        profileData.getComment(),
+        profileData.getDefaultSampleType()
+    );
   }
 
   private ProfileMarshaler(
-      long timeUnixNano,
-      long observedTimeUnixNano,
+      ValueTypeMarshaler[] sampleTypeMarshalers,
+      SampleMarshaler[] sampleMarshalers,
+      MappingMarshaler[] mappingMarshalers,
+      LocationMarshaler[] locationMarshalers,
+      long[] locationIndices,
+      FunctionMarshaler[] functionMarshalers,
       KeyValueMarshaler[] attributeMarshalers,
-      @Nullable String traceId,
-      @Nullable String spanId) {
-    super(calculateSize(timeUnixNano, observedTimeUnixNano, attributeMarshalers, traceId, spanId));
-    this.timeUnixNano = timeUnixNano;
-    this.observedTimeUnixNano = observedTimeUnixNano;
-    this.traceId = traceId;
-    this.spanId = spanId;
+      AttributeUnitMarshaler[] attributeUnitMarshalers,
+      LinkMarshaler[] linkMarshalers,
+      String[] stringTable,
+      long dropFrames,
+      long keepFrames,
+      long timeNanos,
+      long durationNanos,
+      ValueTypeMarshaler periodTypeMarshaler,
+      long period,
+      long[] comment,
+      long defaultSampleType
+  ) {
+    super(calculateSize(
+        sampleTypeMarshalers,
+        sampleMarshalers,
+        mappingMarshalers,
+        locationMarshalers,
+        locationIndices,
+        functionMarshalers,
+        attributeMarshalers,
+        attributeUnitMarshalers,
+        linkMarshalers,
+        stringTable,
+        dropFrames,
+        keepFrames,
+        timeNanos,
+        durationNanos,
+        periodTypeMarshaler,
+        period,
+        comment,
+        defaultSampleType
+    ));
+    this.sampleTypeMarshalers = sampleTypeMarshalers;
+    this.sampleMarshalers = sampleMarshalers;
+    this.mappingMarshalers = mappingMarshalers;
+    this.locationMarshalers = locationMarshalers;
+    this.locationIndices = locationIndices;
+    this.functionMarshalers = functionMarshalers;
     this.attributeMarshalers = attributeMarshalers;
+    this.attributeUnitMarshalers = attributeUnitMarshalers;
+    this.linkMarshalers = linkMarshalers;
+    this.stringTable = stringTable;
+    this.dropFrames = dropFrames;
+    this.keepFrames = keepFrames;
+    this.timeNanos = timeNanos;
+    this.durationNanos = durationNanos;
+    this.periodTypeMarshaler = periodTypeMarshaler;
+    this.period = period;
+    this.comment = comment;
+    this.defaultSampleType = defaultSampleType;
   }
+
 
   @Override
   protected void writeTo(Serializer output) throws IOException {
-    output.serializeFixed64(Profile.TIME_UNIX_NANO, timeUnixNano);
-
-    output.serializeFixed64(Profile.OBSERVED_TIME_UNIX_NANO, observedTimeUnixNano);
-
-    output.serializeRepeatedMessage(Profile.ATTRIBUTES, attributeMarshalers);
-
-    output.serializeTraceId(Profile.TRACE_ID, traceId);
-    output.serializeSpanId(Profile.SPAN_ID, spanId);
+    output.serializeRepeatedMessage(Profile.SAMPLE_TYPE, sampleTypeMarshalers);
+    output.serializeRepeatedMessage(Profile.SAMPLE, sampleMarshalers);
+    output.serializeRepeatedMessage(Profile.MAPPING, mappingMarshalers);
+    output.serializeRepeatedMessage(Profile.LOCATION, locationMarshalers);
+    output.serializeRepeatedInt64(Profile.LOCATION_INDICES, locationIndices);
+    output.serializeRepeatedMessage(Profile.FUNCTION, functionMarshalers);
+    output.serializeRepeatedMessage(Profile.ATTRIBUTE_TABLE, attributeMarshalers);
+    output.serializeRepeatedMessage(Profile.ATTRIBUTE_UNITS, attributeUnitMarshalers);
+    output.serializeRepeatedMessage(Profile.LINK_TABLE, linkMarshalers);
+    for (String s : stringTable) {
+      output.serializeString(Profile.STRING_TABLE, s.getBytes(StandardCharsets.UTF_8));
+    }
+    output.serializeInt64(Profile.DROP_FRAMES, dropFrames);
+    output.serializeInt64(Profile.KEEP_FRAMES, keepFrames);
+    output.serializeInt64(Profile.TIME_NANOS, timeNanos);
+    output.serializeInt64(Profile.DURATION_NANOS, durationNanos);
+    output.serializeMessage(Profile.PERIOD_TYPE, periodTypeMarshaler);
+    output.serializeInt64(Profile.PERIOD, period);
+    output.serializeRepeatedInt64(Profile.COMMENT, comment);
+    output.serializeInt64(Profile.DEFAULT_SAMPLE_TYPE, defaultSampleType);
   }
 
   private static int calculateSize(
-      long timeUnixNano,
-      long observedTimeUnixNano,
+      ValueTypeMarshaler[] sampleTypeMarshalers,
+      SampleMarshaler[] sampleMarshalers,
+      MappingMarshaler[] mappingMarshalers,
+      LocationMarshaler[] locationMarshalers,
+      long[] locationIndices,
+      FunctionMarshaler[] functionMarshalers,
       KeyValueMarshaler[] attributeMarshalers,
-      @Nullable String traceId,
-      @Nullable String spanId) {
-    int size = 0;
-    size += MarshalerUtil.sizeFixed64(Profile.TIME_UNIX_NANO, timeUnixNano);
-
-    size += MarshalerUtil.sizeFixed64(Profile.OBSERVED_TIME_UNIX_NANO, observedTimeUnixNano);
-
-    size += MarshalerUtil.sizeRepeatedMessage(Profile.ATTRIBUTES, attributeMarshalers);
-
-    size += MarshalerUtil.sizeTraceId(Profile.TRACE_ID, traceId);
-    size += MarshalerUtil.sizeSpanId(Profile.SPAN_ID, spanId);
+      AttributeUnitMarshaler[] attributeUnitMarshalers,
+      LinkMarshaler[] linkMarshalers,
+      String[] stringTable,
+      long dropFrames,
+      long keepFrames,
+      long timeNanos,
+      long durationNanos,
+      ValueTypeMarshaler periodTypeMarshaler,
+      long period,
+      long[] comment,
+      long defaultSampleType
+  ) {
+    int size;
+    size = 0;
+    size += MarshalerUtil.sizeRepeatedMessage(Profile.SAMPLE_TYPE, sampleTypeMarshalers);
+    size += MarshalerUtil.sizeRepeatedMessage(Profile.SAMPLE, sampleMarshalers);
+    size += MarshalerUtil.sizeRepeatedMessage(Profile.MAPPING, mappingMarshalers);
+    size += MarshalerUtil.sizeRepeatedMessage(Profile.LOCATION, locationMarshalers);
+    size += MarshalerUtil.sizeRepeatedInt64(Profile.LOCATION_INDICES, locationIndices);
+    size += MarshalerUtil.sizeRepeatedMessage(Profile.FUNCTION, functionMarshalers);
+    size += MarshalerUtil.sizeRepeatedMessage(Profile.ATTRIBUTE_TABLE, attributeMarshalers);
+    size += MarshalerUtil.sizeRepeatedMessage(Profile.ATTRIBUTE_UNITS, attributeUnitMarshalers);
+    size += MarshalerUtil.sizeRepeatedMessage(Profile.LINK_TABLE, linkMarshalers);
+    for (String s : stringTable) {
+      size += MarshalerUtil.sizeBytes(Profile.STRING_TABLE, s.getBytes(StandardCharsets.UTF_8));
+    }
+    //output.serializeRepeatedMessage();
+    size += MarshalerUtil.sizeInt64(Profile.DROP_FRAMES, dropFrames);
+    size += MarshalerUtil.sizeInt64(Profile.KEEP_FRAMES, keepFrames);
+    size += MarshalerUtil.sizeInt64(Profile.TIME_NANOS, timeNanos);
+    size += MarshalerUtil.sizeInt64(Profile.DURATION_NANOS, durationNanos);
+    size += MarshalerUtil.sizeMessage(Profile.PERIOD_TYPE, periodTypeMarshaler);
+    size += MarshalerUtil.sizeInt64(Profile.PERIOD, period);
+    size += MarshalerUtil.sizeRepeatedInt64(Profile.COMMENT, comment);
+    size += MarshalerUtil.sizeInt64(Profile.DEFAULT_SAMPLE_TYPE, defaultSampleType);
     return size;
   }
 }
