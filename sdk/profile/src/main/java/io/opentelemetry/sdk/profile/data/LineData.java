@@ -5,10 +5,13 @@
 
 package io.opentelemetry.sdk.profile.data;
 
+import javax.annotation.concurrent.Immutable;
+
 /**
  * Details a specific line in a source code, linked to a function.
  * @see "pprofextended.proto::Line"
  */
+@Immutable
 public interface LineData {
 
   /**

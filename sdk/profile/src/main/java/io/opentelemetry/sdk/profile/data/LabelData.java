@@ -5,11 +5,14 @@
 
 package io.opentelemetry.sdk.profile.data;
 
+import javax.annotation.concurrent.Immutable;
+
 /**
  * Provides additional context for a sample,
  * such as thread ID or allocation size, with optional units.
  * @see "pprofextended.proto::Label"
  */
+@Immutable
 public interface LabelData {
 
   /**

@@ -31,13 +31,13 @@ final class LineMarshaler extends MarshalerWithSize {
     return lineMarshaler;
   }
 
-  public static LineMarshaler[] createRepeated(List<LineData> lines) {
-    if (lines.isEmpty()) {
+  public static LineMarshaler[] createRepeated(List<LineData> items) {
+    if (items.isEmpty()) {
       return EMPTY_REPEATED;
     }
 
-    LineMarshaler[] lineMarshalers = new LineMarshaler[lines.size()];
-    lines.forEach(lineData -> new Consumer<LineData>() {
+    LineMarshaler[] lineMarshalers = new LineMarshaler[items.size()];
+    items.forEach(item -> new Consumer<LineData>() {
       int index = 0;
 
       @Override

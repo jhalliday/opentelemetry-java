@@ -5,10 +5,13 @@
 
 package io.opentelemetry.sdk.profile.data;
 
+import javax.annotation.concurrent.Immutable;
+
 /**
  * Describes the mapping of a binary in memory.
  * @see "pprofextended.proto::Mapping"
  */
+@Immutable
 public interface MappingData {
 
   /**

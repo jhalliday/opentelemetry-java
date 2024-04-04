@@ -5,10 +5,13 @@
 
 package io.opentelemetry.sdk.profile.data;
 
+import javax.annotation.concurrent.Immutable;
+
 /**
  * A connection from a profile Sample to a trace Span.
  * @see "pprofextended.proto::Link"
  */
+@Immutable
 public interface LinkData {
 
   /**

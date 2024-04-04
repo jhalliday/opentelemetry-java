@@ -5,10 +5,13 @@
 
 package io.opentelemetry.sdk.profile.data;
 
+import javax.annotation.concurrent.Immutable;
+
 /**
  * Represents a mapping between Attribute Keys and Units.
  * @see "pprofextended.proto::AttributeUnit"
  */
+@Immutable
 public interface AttributeUnitData {
 
   /**

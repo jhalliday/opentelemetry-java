@@ -11,9 +11,13 @@ import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.proto.profiles.v1.alternatives.pprofextended.internal.Label;
 import io.opentelemetry.sdk.profile.data.LabelData;
 import java.io.IOException;
+import java.util.List;
+import java.util.function.Consumer;
 
 @Deprecated
 final class LabelMarshaler extends MarshalerWithSize {
+
+  private static final LabelMarshaler[] EMPTY_REPEATED = new LabelMarshaler[0];
 
   private final int keyIndex;
   private final int strIndex;
@@ -28,6 +32,23 @@ final class LabelMarshaler extends MarshalerWithSize {
         labelData.getNum(),
         labelData.getNumUnitIndex()
     );
+  }
+
+  public static LabelMarshaler[] createRepeated(List<LabelData> items) {
+    if (items.isEmpty()) {
+      return EMPTY_REPEATED;
+    }
+
+    LabelMarshaler[] labelMarshalers = new LabelMarshaler[items.size()];
+    items.forEach(item -> new Consumer<LabelData>() {
+      int index = 0;
+
+      @Override
+      public void accept(LabelData labelData) {
+        labelMarshalers[index++] = LabelMarshaler.create(labelData);
+      }
+    });
+    return labelMarshalers;
   }
 
   private LabelMarshaler(

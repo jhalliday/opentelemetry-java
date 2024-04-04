@@ -13,8 +13,12 @@ import io.opentelemetry.proto.profiles.v1.alternatives.pprofextended.internal.Ag
 import io.opentelemetry.proto.profiles.v1.alternatives.pprofextended.internal.ValueType;
 import io.opentelemetry.sdk.profile.data.ValueTypeData;
 import java.io.IOException;
+import java.util.List;
+import java.util.function.Consumer;
 
 final class ValueTypeMarshaler extends MarshalerWithSize {
+
+  private static final ValueTypeMarshaler[] EMPTY_REPEATED = new ValueTypeMarshaler[0];
 
   private final long type;
   private final long unit;
@@ -39,6 +43,23 @@ final class ValueTypeMarshaler extends MarshalerWithSize {
         valueTypeData.unit(),
         aggregationTemporality
     );
+  }
+
+  public static ValueTypeMarshaler[] createRepeated(List<ValueTypeData> items) {
+    if (items.isEmpty()) {
+      return EMPTY_REPEATED;
+    }
+
+    ValueTypeMarshaler[] valueTypeMarshalers = new ValueTypeMarshaler[items.size()];
+    items.forEach(item -> new Consumer<ValueTypeData>() {
+      int index = 0;
+
+      @Override
+      public void accept(ValueTypeData valueTypeData) {
+        valueTypeMarshalers[index++] = ValueTypeMarshaler.create(valueTypeData);
+      }
+    });
+    return valueTypeMarshalers;
   }
 
   private ValueTypeMarshaler(

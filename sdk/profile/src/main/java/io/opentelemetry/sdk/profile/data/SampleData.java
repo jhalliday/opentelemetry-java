@@ -5,6 +5,7 @@
 
 package io.opentelemetry.sdk.profile.data;
 
+import javax.annotation.concurrent.Immutable;
 import java.util.List;
 
 /**
@@ -14,18 +15,59 @@ import java.util.List;
  * indicator of a higher level request being handled etc.
  * @see "pprofextended.proto::Sample"
  */
+@Immutable
 public interface SampleData {
 
-  // TODO docs
-
+  /**
+   *  The indices recorded here correspond to locations in Profile.location.
+   *  The leaf is at location_index[0].
+   *  @deprecated superseded by locations_start_index / locations_length
+   */
+  @Deprecated
   long[] getLocationIndices();
+
+  /**
+   * locationsStartIndex along with locationsLength refers to a slice of locations in Profile.location.
+   * Supersedes locationIndices.
+   */
   long getLocationsStartIndex();
+
+  /**
+   *  locationsLength along with locationsStartIndex refers to a slice of locations in Profile.location.
+   *  locationIndices.
+   */
   long getLocationsLength();
+
+  /**
+   * reference to a 128bit id that uniquely identifies this stacktrace, globally.
+   * Index into the string table.
+   */
   int getStacktraceIdIndex();
+
+  /**
+   * The type and unit of each value is defined by the corresponding entry in Profile.sample_type.
+   */
   long[] getValues();
+
+  /**
+   * Additional context for this sample. It can include thread id, allocation size, etc.
+   */
   @Deprecated
   List<LabelData> getLabels();
+
+  /**
+   * References to attributes in Profile.attribute_table.
+   */
   long[] getAttributes();
+
+  /**
+   *  Reference to link in Profile.link_table.
+   */
   long getLink();
+
+  /**
+   * Timestamps associated with Sample represented in ms.
+   * These timestamps are expected to fall within the Profile's time range.
+   */
   long[] getTimestamps();
 }

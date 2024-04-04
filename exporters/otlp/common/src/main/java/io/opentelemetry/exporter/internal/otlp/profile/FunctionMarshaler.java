@@ -11,8 +11,12 @@ import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.proto.profiles.v1.alternatives.pprofextended.internal.Function;
 import io.opentelemetry.sdk.profile.data.FunctionData;
 import java.io.IOException;
+import java.util.List;
+import java.util.function.Consumer;
 
 final class FunctionMarshaler extends MarshalerWithSize {
+
+  private static final FunctionMarshaler[] EMPTY_REPEATED = new FunctionMarshaler[0];
 
   private final long id;
   private final int nameIndex;
@@ -30,6 +34,23 @@ final class FunctionMarshaler extends MarshalerWithSize {
         functionData.getStartLine()
     );
     return functionMarshaler;
+  }
+
+  public static FunctionMarshaler[] createRepeated(List<FunctionData> items) {
+    if (items.isEmpty()) {
+      return EMPTY_REPEATED;
+    }
+
+    FunctionMarshaler[] functionMarshalers = new FunctionMarshaler[items.size()];
+    items.forEach(item -> new Consumer<FunctionData>() {
+      int index = 0;
+
+      @Override
+      public void accept(FunctionData functionData) {
+        functionMarshalers[index++] = FunctionMarshaler.create(functionData);
+      }
+    });
+    return functionMarshalers;
   }
 
   private FunctionMarshaler(

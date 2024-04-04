@@ -33,19 +33,18 @@ final class ProfileMarshaler extends MarshalerWithSize {
   private final ValueTypeMarshaler periodTypeMarshaler;
   private final long period;
   private final long[] comment;
-  private final long defaultSampleType;
+  private final int defaultSampleType;
 
   static ProfileMarshaler create(ProfileData profileData) {
 
-    // TODO
-    ValueTypeMarshaler[] sampleTypeMarshalers = new ValueTypeMarshaler[0];
-    SampleMarshaler[] sampleMarshalers = new SampleMarshaler[0];
-    MappingMarshaler[] mappingMarshalers = new MappingMarshaler[0];
-    LocationMarshaler[] locationMarshalers = new LocationMarshaler[0];
-    FunctionMarshaler[] functionMarshalers = new FunctionMarshaler[0];
-    KeyValueMarshaler[] attributeMarshalers = new KeyValueMarshaler[0];
-    AttributeUnitMarshaler[] attributeUnitsMarshalers = new AttributeUnitMarshaler[0];
-    LinkMarshaler[] linkMarshalers = new LinkMarshaler[0];
+    ValueTypeMarshaler[] sampleTypeMarshalers = ValueTypeMarshaler.createRepeated(profileData.getSampleTypes());
+    SampleMarshaler[] sampleMarshalers = SampleMarshaler.createRepeated(profileData.getSamples());
+    MappingMarshaler[] mappingMarshalers = MappingMarshaler.createRepeated(profileData.getMappings());
+    LocationMarshaler[] locationMarshalers = LocationMarshaler.createRepeated(profileData.getLocations());
+    FunctionMarshaler[] functionMarshalers = FunctionMarshaler.createRepeated(profileData.getFunctions());
+    KeyValueMarshaler[] attributeMarshalers = KeyValueMarshaler.createRepeated(profileData.getAttributes());
+    AttributeUnitMarshaler[] attributeUnitsMarshalers = AttributeUnitMarshaler.createRepeated(profileData.getAttributeUnits());
+    LinkMarshaler[] linkMarshalers = LinkMarshaler.createRepeated(profileData.getLinks());
     ValueTypeMarshaler periodTypeMarshaler = ValueTypeMarshaler.create(profileData.getPeriodType());
 
     return new ProfileMarshaler(
@@ -88,7 +87,7 @@ final class ProfileMarshaler extends MarshalerWithSize {
       ValueTypeMarshaler periodTypeMarshaler,
       long period,
       long[] comment,
-      long defaultSampleType
+      int defaultSampleType
   ) {
     super(calculateSize(
         sampleTypeMarshalers,
@@ -173,7 +172,7 @@ final class ProfileMarshaler extends MarshalerWithSize {
       ValueTypeMarshaler periodTypeMarshaler,
       long period,
       long[] comment,
-      long defaultSampleType
+      int defaultSampleType
   ) {
     int size;
     size = 0;

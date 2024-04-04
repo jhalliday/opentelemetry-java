@@ -5,10 +5,13 @@
 
 package io.opentelemetry.sdk.profile.data;
 
+import javax.annotation.concurrent.Immutable;
+
 /**
  * ValueType describes the type and units of a value, with an optional aggregation temporality.
  * @see "pprofextended.proto::ValueType"
  */
+@Immutable
 public interface ValueTypeData {
 
   /**

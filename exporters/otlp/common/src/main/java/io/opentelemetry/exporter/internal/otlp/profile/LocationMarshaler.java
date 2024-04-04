@@ -11,8 +11,12 @@ import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.proto.profiles.v1.alternatives.pprofextended.internal.Location;
 import io.opentelemetry.sdk.profile.data.LocationData;
 import java.io.IOException;
+import java.util.List;
+import java.util.function.Consumer;
 
 final class LocationMarshaler extends MarshalerWithSize {
+
+  private static final LocationMarshaler[] EMPTY_REPEATED = new LocationMarshaler[0];
 
   private final long id;
   private final int mappingIndex;
@@ -34,6 +38,23 @@ final class LocationMarshaler extends MarshalerWithSize {
         locationData.getAttributes()
     );
     return locationMarshaler;
+  }
+
+  public static LocationMarshaler[] createRepeated(List<LocationData> items) {
+    if (items.isEmpty()) {
+      return EMPTY_REPEATED;
+    }
+
+    LocationMarshaler[] locationMarshalers = new LocationMarshaler[items.size()];
+    items.forEach(item -> new Consumer<LocationData>() {
+      int index = 0;
+
+      @Override
+      public void accept(LocationData locationData) {
+        locationMarshalers[index++] = LocationMarshaler.create(locationData);
+      }
+    });
+    return locationMarshalers;
   }
 
   private LocationMarshaler(

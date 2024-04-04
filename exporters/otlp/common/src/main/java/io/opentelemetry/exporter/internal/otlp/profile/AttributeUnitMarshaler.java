@@ -11,8 +11,12 @@ import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.proto.profiles.v1.alternatives.pprofextended.internal.AttributeUnit;
 import io.opentelemetry.sdk.profile.data.AttributeUnitData;
 import java.io.IOException;
+import java.util.List;
+import java.util.function.Consumer;
 
 final class AttributeUnitMarshaler extends MarshalerWithSize {
+
+  private static final AttributeUnitMarshaler[] EMPTY_REPEATED = new AttributeUnitMarshaler[0];
 
   private final long attributeKey;
   private final int unitIndex;
@@ -22,6 +26,23 @@ final class AttributeUnitMarshaler extends MarshalerWithSize {
         attributeUnitData.getAttributeKey(),
         attributeUnitData.getUnitIndex()
     );
+  }
+
+  public static AttributeUnitMarshaler[] createRepeated(List<AttributeUnitData> items) {
+    if (items.isEmpty()) {
+      return EMPTY_REPEATED;
+    }
+
+    AttributeUnitMarshaler[] attributeUnitMarshalers = new AttributeUnitMarshaler[items.size()];
+    items.forEach(item -> new Consumer<AttributeUnitData>() {
+      int index = 0;
+
+      @Override
+      public void accept(AttributeUnitData attributeUnitData) {
+        attributeUnitMarshalers[index++] = AttributeUnitMarshaler.create(attributeUnitData);
+      }
+    });
+    return attributeUnitMarshalers;
   }
 
   private AttributeUnitMarshaler(

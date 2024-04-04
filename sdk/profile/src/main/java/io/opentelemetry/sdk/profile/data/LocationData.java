@@ -5,12 +5,14 @@
 
 package io.opentelemetry.sdk.profile.data;
 
+import javax.annotation.concurrent.Immutable;
 import java.util.List;
 
 /**
  * Describes a function.
  * @see "pprofextended.proto::Location"
  */
+@Immutable
 public interface LocationData {
 
   /**

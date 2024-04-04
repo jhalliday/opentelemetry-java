@@ -11,8 +11,12 @@ import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.proto.profiles.v1.alternatives.pprofextended.internal.Link;
 import io.opentelemetry.sdk.profile.data.LinkData;
 import java.io.IOException;
+import java.util.List;
+import java.util.function.Consumer;
 
 final class LinkMarshaler extends MarshalerWithSize {
+
+  private static final LinkMarshaler[] EMPTY_REPEATED = new LinkMarshaler[0];
 
   private final byte[] traceId;
   private final byte[] spanId;
@@ -21,6 +25,23 @@ final class LinkMarshaler extends MarshalerWithSize {
     LinkMarshaler linkMarshaler = new LinkMarshaler(
         linkData.getTraceId(), linkData.getSpanId());
     return linkMarshaler;
+  }
+
+  public static LinkMarshaler[] createRepeated(List<LinkData> items) {
+    if (items.isEmpty()) {
+      return EMPTY_REPEATED;
+    }
+
+    LinkMarshaler[] linkMarshalers = new LinkMarshaler[items.size()];
+    items.forEach(item -> new Consumer<LinkData>() {
+      int index = 0;
+
+      @Override
+      public void accept(LinkData linkData) {
+        linkMarshalers[index++] = LinkMarshaler.create(linkData);
+      }
+    });
+    return linkMarshalers;
   }
 
   private LinkMarshaler(

@@ -13,8 +13,12 @@ import io.opentelemetry.proto.profiles.v1.alternatives.pprofextended.internal.Bu
 import io.opentelemetry.proto.profiles.v1.alternatives.pprofextended.internal.Mapping;
 import io.opentelemetry.sdk.profile.data.MappingData;
 import java.io.IOException;
+import java.util.List;
+import java.util.function.Consumer;
 
 final class MappingMarshaler extends MarshalerWithSize {
+
+  private static final MappingMarshaler[] EMPTY_REPEATED = new MappingMarshaler[0];
 
   private final long id;
   private final long memoryStart;
@@ -55,6 +59,23 @@ final class MappingMarshaler extends MarshalerWithSize {
         mappingData.hasInlineFrames()
     );
     return mappingMarshaler;
+  }
+
+  public static MappingMarshaler[] createRepeated(List<MappingData> items) {
+    if (items.isEmpty()) {
+      return EMPTY_REPEATED;
+    }
+
+    MappingMarshaler[] mappingMarshalers = new MappingMarshaler[items.size()];
+    items.forEach(item -> new Consumer<MappingData>() {
+      int index = 0;
+
+      @Override
+      public void accept(MappingData mappingData) {
+        mappingMarshalers[index++] = MappingMarshaler.create(mappingData);
+      }
+    });
+    return mappingMarshalers;
   }
 
   private MappingMarshaler(

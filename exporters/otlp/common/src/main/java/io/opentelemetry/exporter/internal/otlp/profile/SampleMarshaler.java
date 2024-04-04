@@ -11,9 +11,13 @@ import io.opentelemetry.exporter.internal.marshal.Serializer;
 import io.opentelemetry.proto.profiles.v1.alternatives.pprofextended.internal.Sample;
 import io.opentelemetry.sdk.profile.data.SampleData;
 import java.io.IOException;
+import java.util.List;
+import java.util.function.Consumer;
 
 @SuppressWarnings("deprecation") // LabelMarshaler retained for compatibility
 final class SampleMarshaler extends MarshalerWithSize {
+
+  private static final SampleMarshaler[] EMPTY_REPEATED = new SampleMarshaler[0];
 
   private final long[] locationIndices;
   private final long locationsStartIndex;
@@ -26,7 +30,8 @@ final class SampleMarshaler extends MarshalerWithSize {
   private final long[] timestamps;
 
   static SampleMarshaler create(SampleData sampleData) {
-    LabelMarshaler[] labelMarshalers = new LabelMarshaler[0]; // TODO
+
+    LabelMarshaler[] labelMarshalers = LabelMarshaler.createRepeated(sampleData.getLabels());
 
     return new SampleMarshaler(
         sampleData.getLocationIndices(),
@@ -39,6 +44,23 @@ final class SampleMarshaler extends MarshalerWithSize {
         sampleData.getLink(),
         sampleData.getTimestamps()
     );
+  }
+
+  public static SampleMarshaler[] createRepeated(List<SampleData> items) {
+    if (items.isEmpty()) {
+      return EMPTY_REPEATED;
+    }
+
+    SampleMarshaler[] sampleMarshalers = new SampleMarshaler[items.size()];
+    items.forEach(item -> new Consumer<SampleData>() {
+      int index = 0;
+
+      @Override
+      public void accept(SampleData sampleData) {
+        sampleMarshalers[index++] = SampleMarshaler.create(sampleData);
+      }
+    });
+    return sampleMarshalers;
   }
 
   private SampleMarshaler(
