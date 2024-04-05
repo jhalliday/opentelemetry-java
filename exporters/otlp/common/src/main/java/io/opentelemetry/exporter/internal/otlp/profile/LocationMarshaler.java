@@ -24,7 +24,7 @@ final class LocationMarshaler extends MarshalerWithSize {
   private final LineMarshaler[] lineMarshalers;
   private final boolean isFolded;
   private final int typeIndex;
-  private final long[] attributes;
+  private final List<Long> attributes;
 
   static LocationMarshaler create(LocationData locationData) {
     @SuppressWarnings("deprecation") // getId retained for compatibility
@@ -64,7 +64,7 @@ final class LocationMarshaler extends MarshalerWithSize {
       LineMarshaler[] lineMarshalers,
       boolean isFolded,
       int typeIndex,
-      long[] attributes) {
+      List<Long> attributes) {
     super(calculateSize(
         id,
         mappingIndex,
@@ -101,7 +101,7 @@ final class LocationMarshaler extends MarshalerWithSize {
       LineMarshaler[] lineMarshalers,
       boolean isFolded,
       int typeIndex,
-      long[] attributes
+      List<Long> attributes
   ) {
     int size = 0;
     size += MarshalerUtil.sizeUInt64(Location.ID, id);

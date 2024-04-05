@@ -6,6 +6,7 @@
 package io.opentelemetry.sdk.profile.data;
 
 import javax.annotation.concurrent.Immutable;
+import java.util.List;
 
 /**
  * Describes the mapping of a binary in memory.
@@ -60,7 +61,7 @@ public interface MappingData {
   /**
    * References to attributes in Profile.attribute_table.
    */
-  long[] getAttributeIndices();
+  List<Long> getAttributeIndices();
 
   boolean hasFunctions();
   boolean hasFilenames();

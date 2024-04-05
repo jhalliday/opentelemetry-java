@@ -30,6 +30,7 @@ public interface ProfileContainerData {
    * The ID is a 16-byte array. An ID with all zeroes is considered invalid.
    * This field is required.
    */
+  @SuppressWarnings("mutable")
   byte[] getProfileId();
 
   /**

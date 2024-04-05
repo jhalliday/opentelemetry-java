@@ -18,11 +18,13 @@ public interface LinkData {
    * A unique identifier of a trace that this linked span is part of.
    * The ID is a 16-byte array.
    */
+  @SuppressWarnings("mutable")
   byte[] getTraceId();
 
   /**
    * A unique identifier for the linked span.
    * The ID is an 8-byte array.
    */
+  @SuppressWarnings("mutable")
   byte[] getSpanId();
 }

@@ -27,7 +27,7 @@ final class MappingMarshaler extends MarshalerWithSize {
   private final int filenameIndex;
   private final int buildIdIndex;
   private final ProtoEnumInfo buildIdKind;
-  private final long[] attributeIndices;
+  private final List<Long> attributeIndices;
   private final boolean hasFunctions;
   private final boolean hasFilenames;
   private final boolean hasLineNumbers;
@@ -86,7 +86,7 @@ final class MappingMarshaler extends MarshalerWithSize {
       int filenameIndex,
       int buildIdIndex,
       ProtoEnumInfo buildIdKind,
-      long[] attributeIndices,
+      List<Long> attributeIndices,
       boolean hasFunctions,
       boolean hasFilenames,
       boolean hasLineNumbers,
@@ -144,7 +144,7 @@ final class MappingMarshaler extends MarshalerWithSize {
       int filenameIndex,
       int buildIdIndex,
       ProtoEnumInfo buildIdKind,
-      long[] attributeIndices,
+      List<Long> attributeIndices,
       boolean hasFunctions,
       boolean hasFilenames,
       boolean hasLineNumbers,

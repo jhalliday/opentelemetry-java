@@ -41,7 +41,7 @@ public interface ProfileData {
   /**
    * Array of locations referenced by samples.
    */
-  long[] getLocationIndices();
+  List<Long> getLocationIndices();
 
   /**
    * Functions referenced by locations.
@@ -105,7 +105,7 @@ public interface ProfileData {
    * Free-form text associated with the profile.
    * Indices into string table.
    */
-  long[] getComment();
+  List<Long> getComment();
 
   /**
    * Type of the preferred sample.

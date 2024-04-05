@@ -56,5 +56,5 @@ public interface LocationData {
   /**
    * References to attributes in Profile.attribute_table.
    */
-  long[] getAttributes();
+  List<Long> getAttributes();
 }

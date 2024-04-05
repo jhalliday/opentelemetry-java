@@ -24,7 +24,7 @@ public interface SampleData {
    *  @deprecated superseded by locations_start_index / locations_length
    */
   @Deprecated
-  long[] getLocationIndices();
+  List<Long> getLocationIndices();
 
   /**
    * locationsStartIndex along with locationsLength refers to a slice of locations in Profile.location.
@@ -47,7 +47,7 @@ public interface SampleData {
   /**
    * The type and unit of each value is defined by the corresponding entry in Profile.sample_type.
    */
-  long[] getValues();
+  List<Long> getValues();
 
   /**
    * Additional context for this sample. It can include thread id, allocation size, etc.
@@ -58,7 +58,7 @@ public interface SampleData {
   /**
    * References to attributes in Profile.attribute_table.
    */
-  long[] getAttributes();
+  List<Long> getAttributes();
 
   /**
    *  Reference to link in Profile.link_table.
@@ -69,5 +69,5 @@ public interface SampleData {
    * Timestamps associated with Sample represented in ms.
    * These timestamps are expected to fall within the Profile's time range.
    */
-  long[] getTimestamps();
+  List<Long> getTimestamps();
 }

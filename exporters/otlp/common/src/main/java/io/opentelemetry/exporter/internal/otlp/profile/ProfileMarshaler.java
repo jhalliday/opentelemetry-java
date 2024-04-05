@@ -13,6 +13,7 @@ import io.opentelemetry.proto.profiles.v1.alternatives.pprofextended.internal.Pr
 import io.opentelemetry.sdk.profile.data.ProfileData;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 final class ProfileMarshaler extends MarshalerWithSize {
 
@@ -20,7 +21,7 @@ final class ProfileMarshaler extends MarshalerWithSize {
   private final SampleMarshaler[] sampleMarshalers;
   private final MappingMarshaler[] mappingMarshalers;
   private final LocationMarshaler[] locationMarshalers;
-  private final long[] locationIndices;
+  private final List<Long> locationIndices;
   private final FunctionMarshaler[] functionMarshalers;
   private final KeyValueMarshaler[] attributeMarshalers;
   private final AttributeUnitMarshaler[] attributeUnitMarshalers;
@@ -32,7 +33,7 @@ final class ProfileMarshaler extends MarshalerWithSize {
   private final long durationNanos;
   private final ValueTypeMarshaler periodTypeMarshaler;
   private final long period;
-  private final long[] comment;
+  private final List<Long> comment;
   private final int defaultSampleType;
 
   static ProfileMarshaler create(ProfileData profileData) {
@@ -74,7 +75,7 @@ final class ProfileMarshaler extends MarshalerWithSize {
       SampleMarshaler[] sampleMarshalers,
       MappingMarshaler[] mappingMarshalers,
       LocationMarshaler[] locationMarshalers,
-      long[] locationIndices,
+      List<Long> locationIndices,
       FunctionMarshaler[] functionMarshalers,
       KeyValueMarshaler[] attributeMarshalers,
       AttributeUnitMarshaler[] attributeUnitMarshalers,
@@ -86,7 +87,7 @@ final class ProfileMarshaler extends MarshalerWithSize {
       long durationNanos,
       ValueTypeMarshaler periodTypeMarshaler,
       long period,
-      long[] comment,
+      List<Long> comment,
       int defaultSampleType
   ) {
     super(calculateSize(
@@ -159,7 +160,7 @@ final class ProfileMarshaler extends MarshalerWithSize {
       SampleMarshaler[] sampleMarshalers,
       MappingMarshaler[] mappingMarshalers,
       LocationMarshaler[] locationMarshalers,
-      long[] locationIndices,
+      List<Long> locationIndices,
       FunctionMarshaler[] functionMarshalers,
       KeyValueMarshaler[] attributeMarshalers,
       AttributeUnitMarshaler[] attributeUnitMarshalers,
@@ -171,7 +172,7 @@ final class ProfileMarshaler extends MarshalerWithSize {
       long durationNanos,
       ValueTypeMarshaler periodTypeMarshaler,
       long period,
-      long[] comment,
+      List<Long> comment,
       int defaultSampleType
   ) {
     int size;

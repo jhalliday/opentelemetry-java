@@ -19,15 +19,15 @@ final class SampleMarshaler extends MarshalerWithSize {
 
   private static final SampleMarshaler[] EMPTY_REPEATED = new SampleMarshaler[0];
 
-  private final long[] locationIndices;
+  private final List<Long> locationIndices;
   private final long locationsStartIndex;
   private final long locationsLength;
   private final int stacktraceIdIndex;
-  private final long[] values;
+  private final List<Long> values;
   private final LabelMarshaler[] labelMarshalers;
-  private final long[] attributes;
+  private final List<Long> attributes;
   private final long link;
-  private final long[] timestamps;
+  private final List<Long> timestamps;
 
   static SampleMarshaler create(SampleData sampleData) {
 
@@ -64,15 +64,15 @@ final class SampleMarshaler extends MarshalerWithSize {
   }
 
   private SampleMarshaler(
-      long[] locationIndices,
+      List<Long> locationIndices,
       long locationsStartIndex,
       long locationsLength,
       int stacktraceIdIndex,
-      long[] values,
+      List<Long> values,
       LabelMarshaler[] labelMarshalers,
-      long[] attributes,
+      List<Long> attributes,
       long link,
-      long[] timestamps) {
+      List<Long> timestamps) {
     super(calculateSize(
         locationIndices,
         locationsStartIndex,
@@ -109,15 +109,15 @@ final class SampleMarshaler extends MarshalerWithSize {
   }
 
   private static int calculateSize(
-      long[] locationIndices,
+      List<Long> locationIndices,
       long locationsStartIndex,
       long locationsLength,
       int stacktraceIdIndex,
-      long[] values,
+      List<Long> values,
       LabelMarshaler[] labelMarshalers,
-      long[] attributes,
+      List<Long> attributes,
       long link,
-      long[] timestamps
+      List<Long> timestamps
   ) {
     int size;
     size = 0;
