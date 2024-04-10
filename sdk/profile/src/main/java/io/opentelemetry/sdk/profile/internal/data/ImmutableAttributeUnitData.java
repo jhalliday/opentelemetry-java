@@ -15,7 +15,7 @@ public abstract class ImmutableAttributeUnitData implements AttributeUnitData {
 
   public static AttributeUnitData create(
       long attributeKey,
-      int unitIndex
+      long unitIndex
   ) {
     return new AutoValue_ImmutableAttributeUnitData(attributeKey, unitIndex);
   }

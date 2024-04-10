@@ -14,9 +14,9 @@ import javax.annotation.concurrent.Immutable;
 public abstract class ImmutableLineData implements LineData {
 
   public static LineData create(
-      int functionIndex,
-      int line,
-      int column
+      long functionIndex,
+      long line,
+      long column
   ) {
     return new AutoValue_ImmutableLineData(functionIndex, line, column);
   }

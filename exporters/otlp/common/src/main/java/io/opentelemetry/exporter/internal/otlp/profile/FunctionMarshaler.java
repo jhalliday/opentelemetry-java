@@ -19,9 +19,9 @@ final class FunctionMarshaler extends MarshalerWithSize {
   private static final FunctionMarshaler[] EMPTY_REPEATED = new FunctionMarshaler[0];
 
   private final long id;
-  private final int nameIndex;
-  private final int systemNameIndex;
-  private final int filenameIndex;
+  private final long nameIndex;
+  private final long systemNameIndex;
+  private final long filenameIndex;
   private final long startLine;
 
   static FunctionMarshaler create(FunctionData functionData) {
@@ -55,9 +55,9 @@ final class FunctionMarshaler extends MarshalerWithSize {
 
   private FunctionMarshaler(
       long id,
-      int nameIndex,
-      int systemNameIndex,
-      int filenameIndex,
+      long nameIndex,
+      long systemNameIndex,
+      long filenameIndex,
       long startLine
   ) {
     super(calculateSize(
@@ -84,9 +84,9 @@ final class FunctionMarshaler extends MarshalerWithSize {
 
   private static int calculateSize(
       long id,
-      int nameIndex,
-      int systemNameIndex,
-      int filenameIndex,
+      long nameIndex,
+      long systemNameIndex,
+      long filenameIndex,
       long startLine
   ) {
     int size = 0;

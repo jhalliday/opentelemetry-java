@@ -22,5 +22,5 @@ public interface AttributeUnitData {
   /**
    * Index into string table.
    */
-  int getUnitIndex();
+  long getUnitIndex();
 }

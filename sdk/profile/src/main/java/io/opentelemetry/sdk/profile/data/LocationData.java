@@ -27,7 +27,7 @@ public interface LocationData {
    * The index of the corresponding profile.Mapping for this location.
    * It can be unset if the mapping is unknown or not applicable for this profile type.
    */
-  int getMappingIndex();
+  long getMappingIndex();
 
   /**
    * The instruction address for this location, if available.

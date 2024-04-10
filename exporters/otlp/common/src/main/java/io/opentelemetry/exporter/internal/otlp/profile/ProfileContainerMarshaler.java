@@ -21,7 +21,7 @@ final class ProfileContainerMarshaler extends MarshalerWithSize {
   private final long endTimeUnixNano;
   private final KeyValueMarshaler[] attributeMarshalers;
   private final int droppedAttributesCount;
-  private final String originalPayloadFormat;
+  private final byte[] originalPayloadFormatUtf8;
   private final byte[] originalPayload;
   private final ProfileMarshaler profileMarshaler;
 
@@ -33,7 +33,7 @@ final class ProfileContainerMarshaler extends MarshalerWithSize {
         // TODO order
         KeyValueMarshaler.createRepeated(profileContainerData.getAttributes()),
         profileContainerData.getDroppedAttributesCount(),
-        profileContainerData.getOriginalPayloadFormat() != null ? profileContainerData.getOriginalPayloadFormat() :  "",
+        profileContainerData.getOriginalPayloadFormat() != null ? profileContainerData.getOriginalPayloadFormat().getBytes(StandardCharsets.UTF_8) :  new byte[0],
         profileContainerData.getOriginalPayload() != null ? profileContainerData.getOriginalPayload() : new byte[0],
         ProfileMarshaler.create(profileContainerData.getProfile())
     );
@@ -45,7 +45,7 @@ final class ProfileContainerMarshaler extends MarshalerWithSize {
       long endTimeUnixNano,
       KeyValueMarshaler[] attributeMarshalers,
       int droppedAttributesCount,
-      String originalPayloadFormat,
+      byte[] originalPayloadFormat,
       byte[] originalPayload,
       ProfileMarshaler profileMarshaler
   ) {
@@ -64,7 +64,7 @@ final class ProfileContainerMarshaler extends MarshalerWithSize {
     this.endTimeUnixNano = endTimeUnixNano;
     this.attributeMarshalers = attributeMarshalers;
     this.droppedAttributesCount = droppedAttributesCount;
-    this.originalPayloadFormat = originalPayloadFormat;
+    this.originalPayloadFormatUtf8 = originalPayloadFormat;
     this.originalPayload = originalPayload;
     this.profileMarshaler = profileMarshaler;
   }
@@ -76,9 +76,7 @@ final class ProfileContainerMarshaler extends MarshalerWithSize {
     output.serializeFixed64(ProfileContainer.END_TIME_UNIX_NANO, endTimeUnixNano);
     output.serializeRepeatedMessage(ProfileContainer.ATTRIBUTES, attributeMarshalers);
     output.serializeUInt32(ProfileContainer.DROPPED_ATTRIBUTES_COUNT, droppedAttributesCount);
-    output.serializeString(ProfileContainer.ORIGINAL_PAYLOAD_FORMAT, originalPayloadFormat.getBytes(
-        StandardCharsets.UTF_8)
-    );
+    output.serializeString(ProfileContainer.ORIGINAL_PAYLOAD_FORMAT, originalPayloadFormatUtf8);
     output.serializeBytes(ProfileContainer.ORIGINAL_PAYLOAD, originalPayload);
     output.serializeMessage(ProfileContainer.PROFILE, profileMarshaler);
   }
@@ -89,7 +87,7 @@ final class ProfileContainerMarshaler extends MarshalerWithSize {
       long endTimeUnixNano,
       KeyValueMarshaler[] attributeMarshalers,
       int droppedAttributesCount,
-      String originalPayloadFormat,
+      byte[] originalPayloadFormat,
       byte[] originalPayload,
       ProfileMarshaler profileMarshaler
   ) {
@@ -101,10 +99,7 @@ final class ProfileContainerMarshaler extends MarshalerWithSize {
     size += MarshalerUtil.sizeRepeatedMessage(ProfileContainer.ATTRIBUTES, attributeMarshalers);
     size += MarshalerUtil.sizeUInt32(ProfileContainer.DROPPED_ATTRIBUTES_COUNT,
         droppedAttributesCount);
-    size += MarshalerUtil.sizeBytes(ProfileContainer.ORIGINAL_PAYLOAD_FORMAT,
-        originalPayloadFormat.getBytes(
-            StandardCharsets.UTF_8)
-    );
+    size += MarshalerUtil.sizeBytes(ProfileContainer.ORIGINAL_PAYLOAD_FORMAT, originalPayloadFormat);
     size += MarshalerUtil.sizeBytes(ProfileContainer.ORIGINAL_PAYLOAD, originalPayload);
     size += MarshalerUtil.sizeMessage(ProfileContainer.PROFILE, profileMarshaler);
     return size;

@@ -14,10 +14,10 @@ import javax.annotation.concurrent.Immutable;
 public abstract class ImmutableLabelData implements LabelData {
 
   public static LabelData create(
-      int keyIndex,
-      int strIndex,
+      long keyIndex,
+      long strIndex,
       long num,
-      int numUnitIndex
+      long numUnitIndex
   ) {
     return new AutoValue_ImmutableLabelData(keyIndex, strIndex, num, numUnitIndex);
   }

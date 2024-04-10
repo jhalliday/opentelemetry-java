@@ -19,7 +19,7 @@ public abstract class ImmutableLocationData implements LocationData {
 
   public static LocationData create(
       long id,
-      int mappingIndex,
+      long mappingIndex,
       long address,
       List<LineData> lines,
       boolean folded,

@@ -41,7 +41,7 @@ public abstract class ImmutableProfileData implements ProfileData {
       ValueTypeData periodType,
       long period,
       List<Long> comment,
-      int defaultSampleType
+      long defaultSampleType
   ) {
     return new AutoValue_ImmutableProfileData(
         sampleTypes, samples, mappings, locations, locationIndices, functions, attributes,

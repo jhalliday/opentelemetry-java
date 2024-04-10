@@ -11,116 +11,276 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 import com.google.protobuf.util.JsonFormat;
-import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.internal.OtelEncodingUtils;
-import io.opentelemetry.api.trace.SpanContext;
-import io.opentelemetry.api.trace.SpanId;
-import io.opentelemetry.api.trace.TraceFlags;
-import io.opentelemetry.api.trace.TraceId;
-import io.opentelemetry.api.trace.TraceState;
 import io.opentelemetry.exporter.internal.marshal.Marshaler;
-import io.opentelemetry.proto.common.v1.AnyValue;
-import io.opentelemetry.proto.common.v1.InstrumentationScope;
-import io.opentelemetry.proto.common.v1.KeyValue;
-import io.opentelemetry.proto.profiles.v1.Profile;
-import io.opentelemetry.proto.profiles.v1.ResourceProfiles;
-import io.opentelemetry.proto.profiles.v1.ScopeProfiles;
+import io.opentelemetry.proto.profiles.v1.ProfileContainer;
+import io.opentelemetry.proto.profiles.v1.alternatives.pprofextended.Function;
+import io.opentelemetry.proto.profiles.v1.alternatives.pprofextended.Label;
+import io.opentelemetry.proto.profiles.v1.alternatives.pprofextended.Line;
+import io.opentelemetry.proto.profiles.v1.alternatives.pprofextended.Location;
+import io.opentelemetry.proto.profiles.v1.alternatives.pprofextended.Mapping;
+import io.opentelemetry.proto.profiles.v1.alternatives.pprofextended.Profile;
+import io.opentelemetry.proto.profiles.v1.alternatives.pprofextended.Sample;
+import io.opentelemetry.proto.profiles.v1.alternatives.pprofextended.ValueType;
+import io.opentelemetry.proto.profiles.v1.alternatives.pprofextended.Link;
+import io.opentelemetry.proto.profiles.v1.alternatives.pprofextended.AttributeUnit;
 import io.opentelemetry.sdk.common.InstrumentationScopeInfo;
-import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.testing.profile.TestProfileData;
+import io.opentelemetry.sdk.profile.data.AggregationTemporality;
+import io.opentelemetry.sdk.profile.data.AttributeUnitData;
+import io.opentelemetry.sdk.profile.data.BuildIdKind;
+import io.opentelemetry.sdk.profile.data.FunctionData;
+import io.opentelemetry.sdk.profile.data.LabelData;
+import io.opentelemetry.sdk.profile.data.LineData;
+import io.opentelemetry.sdk.profile.data.LinkData;
+import io.opentelemetry.sdk.profile.data.LocationData;
+import io.opentelemetry.sdk.profile.data.MappingData;
+import io.opentelemetry.sdk.profile.data.ProfileContainerData;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Locale;
-import java.util.concurrent.TimeUnit;
+import java.util.List;
+import io.opentelemetry.sdk.profile.data.ProfileData;
+import io.opentelemetry.sdk.profile.data.SampleData;
+import io.opentelemetry.sdk.profile.data.ValueTypeData;
+import io.opentelemetry.sdk.profile.internal.data.ImmutableAttributeUnitData;
+import io.opentelemetry.sdk.profile.internal.data.ImmutableFunctionData;
+import io.opentelemetry.sdk.profile.internal.data.ImmutableLabelData;
+import io.opentelemetry.sdk.profile.internal.data.ImmutableLineData;
+import io.opentelemetry.sdk.profile.internal.data.ImmutableLinkData;
+import io.opentelemetry.sdk.profile.internal.data.ImmutableLocationData;
+import io.opentelemetry.sdk.profile.internal.data.ImmutableMappingData;
+import io.opentelemetry.sdk.profile.internal.data.ImmutableProfileContainerData;
+import io.opentelemetry.sdk.profile.internal.data.ImmutableProfileData;
+import io.opentelemetry.sdk.profile.internal.data.ImmutableSampleData;
+import io.opentelemetry.sdk.profile.internal.data.ImmutableValueTypeData;
+import io.opentelemetry.sdk.resources.Resource;
 import org.junit.jupiter.api.Test;
 
-public class ProfileRequestMarshalerTest {
 
-  private static final byte[] TRACE_ID_BYTES =
-      new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4};
-  private static final String TRACE_ID = TraceId.fromBytes(TRACE_ID_BYTES);
-  private static final byte[] SPAN_ID_BYTES = new byte[] {0, 0, 0, 0, 4, 3, 2, 1};
-  private static final String SPAN_ID = SpanId.fromBytes(SPAN_ID_BYTES);
+public class ProfilesRequestMarshalerTest {
 
   @Test
-  void toProtoResourceProfile() {
-    ResourceProfilesMarshaler[] resourceProfilesMarshalers =
-        ResourceProfilesMarshaler.create(
-            Collections.singleton(
-                TestProfileData.builder()
-                    .setResource(
-                        Resource.builder().put("one", 1).setSchemaUrl("http://url").build())
-                    .setInstrumentationScopeInfo(
-                        InstrumentationScopeInfo.builder("testLib")
-                            .setVersion("1.0")
-                            .setSchemaUrl("http://url")
-                            .setAttributes(Attributes.builder().put("key", "value").build())
-                            .build())
-                    .setSpanContext(
-                        SpanContext.create(
-                            TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TraceState.getDefault()))
-                    .setAttributes(Attributes.of(AttributeKey.booleanKey("key"), true))
-                    .setTotalAttributeCount(2)
-                    .setTimestamp(12345, TimeUnit.NANOSECONDS)
-                    .setObservedTimestamp(6789, TimeUnit.NANOSECONDS)
-                    .build()));
+  void compareAttributeUnitMarshaling() {
+    AttributeUnitData input = ImmutableAttributeUnitData.create(1, 2);
+    AttributeUnit builderResult = AttributeUnit.newBuilder()
+            .setAttributeKey(1).setUnit(2).build();
 
-    assertThat(resourceProfilesMarshalers).hasSize(1);
-
-    ResourceProfiles onlyResourceProfile =
-        parse(ResourceProfiles.getDefaultInstance(), resourceProfilesMarshalers[0]);
-    assertThat(onlyResourceProfile.getSchemaUrl()).isEqualTo("http://url");
-    assertThat(onlyResourceProfile.getScopeProfilesCount()).isEqualTo(1);
-    ScopeProfiles instrumentationLibraryProfile = onlyResourceProfile.getScopeProfiles(0);
-    assertThat(instrumentationLibraryProfile.getSchemaUrl()).isEqualTo("http://url");
-    assertThat(instrumentationLibraryProfile.getScope())
-        .isEqualTo(
-            InstrumentationScope.newBuilder()
-                .setName("testLib")
-                .setVersion("1.0")
-                .addAttributes(
-                    KeyValue.newBuilder()
-                        .setKey("key")
-                        .setValue(AnyValue.newBuilder().setStringValue("value").build())
-                        .build())
-                .build());
+    AttributeUnit roundTripResult = parse(AttributeUnit.getDefaultInstance(), AttributeUnitMarshaler.create(input));
+    assertThat(roundTripResult).isEqualTo(builderResult);
   }
 
   @Test
-  void toProtoProfile() {
-    Profile profile =
-        parse(
-            Profile.getDefaultInstance(),
-            ProfileMarshaler.create(
-                TestProfileData.builder()
-                    .setResource(
-                        Resource.create(Attributes.builder().put("testKey", "testValue").build()))
-                    .setInstrumentationScopeInfo(
-                        InstrumentationScopeInfo.builder("instrumentation").setVersion("1").build())
-                    .setSpanContext(
-                        SpanContext.create(
-                            TRACE_ID, SPAN_ID, TraceFlags.getDefault(), TraceState.getDefault()))
-                    .setAttributes(Attributes.of(AttributeKey.booleanKey("key"), true))
-                    .setTotalAttributeCount(2)
-                    .setTimestamp(12345, TimeUnit.NANOSECONDS)
-                    .setObservedTimestamp(6789, TimeUnit.NANOSECONDS)
-                    .build()));
+  void compareFunctionMarshaling() {
+    FunctionData input = ImmutableFunctionData.create(1, 2, 3, 4, 5);
+    Function builderResult = Function.newBuilder()
+        .setId(1).setName(2).setSystemName(3).setFilename(4).setStartLine(5)
+        .build();
 
-//    assertThat(profile.getTraceId().toByteArray()).isEqualTo(TRACE_ID_BYTES);
-//    assertThat(profile.getSpanId().toByteArray()).isEqualTo(SPAN_ID_BYTES);
-//    assertThat(profile.getAttributesList())
-//        .containsExactly(
-//            KeyValue.newBuilder()
-//                .setKey("key")
-//                .setValue(AnyValue.newBuilder().setBoolValue(true).build())
-//                .build());
-//    assertThat(profile.getTimeUnixNano()).isEqualTo(12345);
-//    assertThat(profile.getObservedTimeUnixNano()).isEqualTo(6789);
+    Function roundTripResult = parse(Function.getDefaultInstance(), FunctionMarshaler.create(input));
+    assertThat(roundTripResult).isEqualTo(builderResult);
+  }
+
+  @Test
+  @SuppressWarnings("deprecation") // even deprecated methods need testing
+  void compareLabelMarshaling() {
+    LabelData input = ImmutableLabelData.create(1, 2, 3, 4);
+    Label builderResult = Label.newBuilder().setKey(1).setStr(2).setNum(3).setNumUnit(4).build();
+
+    Label roundTripResult = parse(Label.getDefaultInstance(), LabelMarshaler.create(input));
+    assertThat(roundTripResult).isEqualTo(builderResult);
+  }
+
+  @Test
+  void compareLineMarshaling() {
+    LineData input = ImmutableLineData.create(1, 2, 3);
+    Line builderResult = Line.newBuilder()
+        .setFunctionIndex(1).setLine(2).setColumn(3).build();
+
+    Line roundTripResult = parse(Line.getDefaultInstance(), LineMarshaler.create(input));
+    assertThat(roundTripResult).isEqualTo(builderResult);
+  }
+
+  @Test
+  void compareLinkMarshaling() {
+    LinkData input = ImmutableLinkData.create(new byte[] {1,2}, new byte[] {3,4});
+    Link builderResult = Link.newBuilder()
+        .setTraceId(ByteString.copyFrom(new byte[] {1,2}))
+        .setSpanId(ByteString.copyFrom(new byte[] {3,4}))
+        .build();
+
+    Link roundTripResult = parse(Link.getDefaultInstance(), LinkMarshaler.create(input));
+    assertThat(roundTripResult).isEqualTo(builderResult);
+  }
+
+  @Test
+  void compareLocationMarshaling() {
+    LocationData input = ImmutableLocationData.create(1, 2, 3, Collections.emptyList(), true, 4, listOf(5L,6L));
+    Location builderResult = Location.newBuilder()
+        .setId(1).setMappingIndex(2).setAddress(3).setIsFolded(true).setTypeIndex(4)
+        .addAllAttributes(listOf(5L,6L)).build();
+
+    Location roundTripResult = parse(Location.getDefaultInstance(), LocationMarshaler.create(input));
+    assertThat(roundTripResult).isEqualTo(builderResult);
+  }
+
+  @Test
+  void compareMappingMarshaling() {
+    MappingData input = ImmutableMappingData.create(
+        1, 2, 3, 4, 5,
+        6, BuildIdKind.LINKER, listOf(7L,8L), true, true, true, true);
+    Mapping builderResult = Mapping.newBuilder()
+        .setId(1).setMemoryStart(2).setMemoryLimit(3).setFileOffset(4).setFilename(5)
+        .setBuildId(6).setBuildIdKind(
+            io.opentelemetry.proto.profiles.v1.alternatives.pprofextended.BuildIdKind.BUILD_ID_LINKER)
+        .addAllAttributes(listOf(7L,8L))
+        .setHasFunctions(true).setHasFilenames(true).setHasLineNumbers(true).setHasInlineFrames(true)
+        .build();
+
+    Mapping roundTripResult = parse(Mapping.getDefaultInstance(), MappingMarshaler.create(input));
+    assertThat(roundTripResult).isEqualTo(builderResult);
+  }
+
+  @Test
+  void compareProfileContainerMarshaling() {
+    ProfileContainerData input = ImmutableProfileContainerData.create(
+        Resource.getDefault(),
+        InstrumentationScopeInfo.empty(),
+        new byte[] {1,2},
+        3,
+        4,
+        Attributes.empty(),
+        5,
+        "format",
+        new byte[] {6,7},
+        ImmutableProfileData.create( // dedup
+            Collections.emptyList(),
+            Collections.emptyList(),
+            Collections.emptyList(),
+            Collections.emptyList(),
+            listOf(1L,2L),
+            Collections.emptyList(),
+            Attributes.empty(),
+            Collections.emptyList(),
+            Collections.emptyList(),
+            Collections.emptyList(),
+            3,4,5,6,
+            ImmutableValueTypeData.create(1, 2, AggregationTemporality.CUMULATIVE),
+            7,
+            listOf(8L,9L),
+            10
+        )
+    );
+
+    ProfileContainer builderResult = ProfileContainer.newBuilder()
+        .setProfileId(ByteString.copyFrom(new byte[] {1,2}))
+        .setStartTimeUnixNano(3)
+        .setEndTimeUnixNano(4)
+        .setDroppedAttributesCount(5)
+        .setOriginalPayloadFormat("format")
+        .setOriginalPayload(ByteString.copyFrom(new byte[] {6,7}))
+        .setProfile(
+            Profile.newBuilder()
+                .addAllLocationIndices(listOf(1L,2L))
+                .setDropFrames(3)
+                .setKeepFrames(4)
+                .setTimeNanos(5)
+                .setDurationNanos(6)
+                .setPeriod(7)
+                .setPeriodType(ValueType.newBuilder()
+                    .setType(1).setUnit(2).setAggregationTemporality(
+                        io.opentelemetry.proto.profiles.v1.alternatives.pprofextended.AggregationTemporality.AGGREGATION_TEMPORALITY_CUMULATIVE).build())
+                .addAllComment(listOf(8L,9L))
+                .setDefaultSampleType(10)
+                .build()
+        )
+        .build();
+
+    ProfileContainer roundTripResult = parse(ProfileContainer.getDefaultInstance(), ProfileContainerMarshaler.create(input));
+    assertThat(roundTripResult).isEqualTo(builderResult);
+
+  }
+
+  @Test
+  void compareProfileMarshaling() {
+    ProfileData input = ImmutableProfileData.create(
+        Collections.emptyList(),
+        Collections.emptyList(),
+        Collections.emptyList(),
+        Collections.emptyList(),
+        listOf(1L,2L),
+        Collections.emptyList(),
+        Attributes.empty(),
+        Collections.emptyList(),
+        Collections.emptyList(),
+        Collections.emptyList(),
+        3,4,5,6,
+        ImmutableValueTypeData.create(1, 2, AggregationTemporality.CUMULATIVE),
+        7,
+        listOf(8L,9L),
+        10
+    );
+    Profile builderResult = Profile.newBuilder()
+        .addAllLocationIndices(listOf(1L,2L))
+        .setDropFrames(3)
+        .setKeepFrames(4)
+        .setTimeNanos(5)
+        .setDurationNanos(6)
+        .setPeriod(7)
+        .setPeriodType(ValueType.newBuilder()
+            .setType(1).setUnit(2).setAggregationTemporality(
+                io.opentelemetry.proto.profiles.v1.alternatives.pprofextended.AggregationTemporality.AGGREGATION_TEMPORALITY_CUMULATIVE).build())
+        .addAllComment(listOf(8L,9L))
+        .setDefaultSampleType(10)
+        .build();
+
+    Profile roundTripResult = parse(Profile.getDefaultInstance(), ProfileMarshaler.create(input));
+    assertThat(roundTripResult).isEqualTo(builderResult);
+  }
+
+  @Test
+  void compareSampleMarshaling() {
+    SampleData input = ImmutableSampleData.create(
+        listOf(1L,2L), 3, 4, 5, listOf(6L,7L),
+        Collections.emptyList(),
+        listOf(8L,9L), 10, listOf(11L,12L));
+    Sample builderResult = Sample.newBuilder()
+        .addAllLocationIndex(listOf(1L,2L))
+        .setLocationsStartIndex(3)
+        .setLocationsLength(4)
+        .setStacktraceIdIndex(5)
+        .addAllValue(listOf(6L,7L))
+//        .setLabel(0, )
+//        .setLabel(1, )
+        .addAllAttributes(listOf(8L,9L))
+        .setLink(10)
+        .addAllTimestamps(listOf(11L,12L))
+        .build();
+
+    Sample roundTripResult = parse(Sample.getDefaultInstance(), SampleMarshaler.create(input));
+    assertThat(roundTripResult).isEqualTo(builderResult);
+  }
+
+  @Test
+  void compareValueTypeMarshaling() {
+    ValueTypeData input = ImmutableValueTypeData.create(1, 2, AggregationTemporality.CUMULATIVE);
+    ValueType builderResult = ValueType.newBuilder()
+            .setType(1).setUnit(2).setAggregationTemporality(
+            io.opentelemetry.proto.profiles.v1.alternatives.pprofextended.AggregationTemporality.AGGREGATION_TEMPORALITY_CUMULATIVE)
+        .build();
+
+    ValueType roundTripResult = parse(ValueType.getDefaultInstance(), ValueTypeMarshaler.create(input));
+    assertThat(roundTripResult).isEqualTo(builderResult);
+  }
+
+
+  private static <T> List<T> listOf(T a, T b) {
+    ArrayList<T> list = new ArrayList<>();
+    list.add(a);
+    list.add(b);
+    return Collections.unmodifiableList(list);
   }
 
   @SuppressWarnings("unchecked")
@@ -150,36 +310,9 @@ public class ProfileRequestMarshalerTest {
       throw new UncheckedIOException(e);
     }
 
-    // Hackily swap out "hex as base64" decoded IDs with correct ones since no JSON protobuf
-    // libraries currently support customizing on the parse side.
-    if (result instanceof Profile) {
-      fixSpanJsonIds((Profile.Builder) builder);
-    }
-
-    if (result instanceof ResourceProfiles) {
-      ResourceProfiles.Builder fixed = (ResourceProfiles.Builder) builder;
-      for (ScopeProfiles.Builder ill : fixed.getScopeProfilesBuilderList()) {
-        for (Profile.Builder span : ill.getProfilesBuilderList()) {
-          fixSpanJsonIds(span);
-        }
-      }
-    }
-
     assertThat(builder.build()).isEqualTo(result);
 
     return result;
-  }
-
-  private static void fixSpanJsonIds(Profile.Builder span) {
-//    span.setTraceId(toHex(span.getTraceId()));
-//    span.setSpanId(toHex(span.getSpanId()));
-  }
-
-  @SuppressWarnings("UnusedMethod")
-  private static ByteString toHex(ByteString hexReadAsBase64) {
-    String hex =
-        Base64.getEncoder().encodeToString(hexReadAsBase64.toByteArray()).toLowerCase(Locale.ROOT);
-    return ByteString.copyFrom(OtelEncodingUtils.bytesFromBase16(hex, hex.length()));
   }
 
   private static byte[] toByteArray(Marshaler marshaler) {

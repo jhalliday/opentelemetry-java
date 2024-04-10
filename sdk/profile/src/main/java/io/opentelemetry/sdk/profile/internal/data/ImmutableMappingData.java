@@ -17,15 +17,14 @@ import java.util.List;
 @SuppressWarnings("deprecation") // generated code uses deprecated methods in e.g. equals()
 public abstract class ImmutableMappingData implements MappingData {
 
-  // TODO kill get prefix
   @SuppressWarnings("TooManyParameters")
   public static MappingData create(
       long id,
       long memoryStart,
       long memoryLimit,
       long fileOffset,
-      int filenameIndex,
-      int buildIdIndex,
+      long filenameIndex,
+      long buildIdIndex,
       BuildIdKind buildIdKind,
       List<Long> attributeIndices,
       boolean hasFunctions,

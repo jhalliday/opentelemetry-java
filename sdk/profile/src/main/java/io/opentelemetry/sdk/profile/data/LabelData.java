@@ -18,13 +18,13 @@ public interface LabelData {
   /**
    * Index into string table
    */
-  int getKeyIndex();
+  long getKeyIndex();
 
   /**
    * String value of the label data, if applicable.
    * Index into string table
    */
-  int getStrIndex();
+  long getStrIndex();
 
   /**
    * Numeric value of the label data, if applicable.
@@ -35,5 +35,5 @@ public interface LabelData {
    * Specifies the units of num, applicable only if num is present.
    * Use arbitrary string (for example, "requests") as a custom count unit.
    */
-  int getNumUnitIndex();
+  long getNumUnitIndex();
 }

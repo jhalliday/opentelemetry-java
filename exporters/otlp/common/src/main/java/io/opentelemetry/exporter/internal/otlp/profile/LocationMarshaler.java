@@ -19,7 +19,7 @@ final class LocationMarshaler extends MarshalerWithSize {
   private static final LocationMarshaler[] EMPTY_REPEATED = new LocationMarshaler[0];
 
   private final long id;
-  private final int mappingIndex;
+  private final long mappingIndex;
   private final long address;
   private final LineMarshaler[] lineMarshalers;
   private final boolean isFolded;
@@ -59,7 +59,7 @@ final class LocationMarshaler extends MarshalerWithSize {
 
   private LocationMarshaler(
       long id,
-      int mappingIndex,
+      long mappingIndex,
       long address,
       LineMarshaler[] lineMarshalers,
       boolean isFolded,
@@ -96,7 +96,7 @@ final class LocationMarshaler extends MarshalerWithSize {
 
   private static int calculateSize(
       long id,
-      int mappingIndex,
+      long mappingIndex,
       long address,
       LineMarshaler[] lineMarshalers,
       boolean isFolded,

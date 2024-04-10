@@ -18,9 +18,9 @@ final class LineMarshaler extends MarshalerWithSize {
 
   private static final LineMarshaler[] EMPTY_REPEATED = new LineMarshaler[0];
 
-  private final int functionIndex;
-  private final int line;
-  private final int column;
+  private final long functionIndex;
+  private final long line;
+  private final long column;
 
   static LineMarshaler create(LineData lineData) {
     LineMarshaler lineMarshaler = new LineMarshaler(
@@ -48,7 +48,7 @@ final class LineMarshaler extends MarshalerWithSize {
     return lineMarshalers;
   }
 
-  private LineMarshaler(int functionIndex, int line, int column) {
+  private LineMarshaler(long functionIndex, long line, long column) {
     super(calculateSize(functionIndex, line, column));
     this.functionIndex = functionIndex;
     this.line = line;
@@ -62,7 +62,7 @@ final class LineMarshaler extends MarshalerWithSize {
     output.serializeInt64(Line.COLUMN, column);
   }
 
-  private static int calculateSize(int functionIndex, int line, int column) {
+  private static int calculateSize(long functionIndex, long line, long column) {
     int size = 0;
     size += MarshalerUtil.sizeUInt64(Line.FUNCTION_INDEX, functionIndex);
     size += MarshalerUtil.sizeInt64(Line.LINE, line);

@@ -111,5 +111,5 @@ public interface ProfileData {
    * Type of the preferred sample.
    * Index into the string table.
    */
-  int getDefaultSampleType();
+  long getDefaultSampleType();
 }

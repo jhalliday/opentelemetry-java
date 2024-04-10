@@ -19,7 +19,7 @@ final class AttributeUnitMarshaler extends MarshalerWithSize {
   private static final AttributeUnitMarshaler[] EMPTY_REPEATED = new AttributeUnitMarshaler[0];
 
   private final long attributeKey;
-  private final int unitIndex;
+  private final long unitIndex;
 
   static AttributeUnitMarshaler create(AttributeUnitData attributeUnitData) {
     return new AttributeUnitMarshaler(
@@ -47,7 +47,7 @@ final class AttributeUnitMarshaler extends MarshalerWithSize {
 
   private AttributeUnitMarshaler(
       long attributeKey,
-      int unitIndex
+      long unitIndex
   ) {
     super(calculateSize(attributeKey, unitIndex));
     this.attributeKey = attributeKey;
@@ -62,7 +62,7 @@ final class AttributeUnitMarshaler extends MarshalerWithSize {
 
   private static int calculateSize(
       long attributeKey,
-      int unitIndex
+      long unitIndex
   ) {
     int size;
     size = 0;

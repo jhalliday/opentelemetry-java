@@ -26,7 +26,7 @@ final class ProfileMarshaler extends MarshalerWithSize {
   private final KeyValueMarshaler[] attributeMarshalers;
   private final AttributeUnitMarshaler[] attributeUnitMarshalers;
   private final LinkMarshaler[] linkMarshalers;
-  private final String[] stringTable;
+  private final byte[][] stringTable;
   private final long dropFrames;
   private final long keepFrames;
   private final long timeNanos;
@@ -34,7 +34,7 @@ final class ProfileMarshaler extends MarshalerWithSize {
   private final ValueTypeMarshaler periodTypeMarshaler;
   private final long period;
   private final List<Long> comment;
-  private final int defaultSampleType;
+  private final long defaultSampleType;
 
   static ProfileMarshaler create(ProfileData profileData) {
 
@@ -48,6 +48,11 @@ final class ProfileMarshaler extends MarshalerWithSize {
     LinkMarshaler[] linkMarshalers = LinkMarshaler.createRepeated(profileData.getLinks());
     ValueTypeMarshaler periodTypeMarshaler = ValueTypeMarshaler.create(profileData.getPeriodType());
 
+    byte[][] convertedStrings = new byte[profileData.getStringTable().size()][];
+    for(int i = 0; i < profileData.getStringTable().size(); i++) {
+      convertedStrings[i] = profileData.getStringTable().get(i).getBytes(StandardCharsets.UTF_8);
+    }
+
     return new ProfileMarshaler(
         sampleTypeMarshalers,
         sampleMarshalers,
@@ -58,7 +63,7 @@ final class ProfileMarshaler extends MarshalerWithSize {
         attributeMarshalers,
         attributeUnitsMarshalers,
         linkMarshalers,
-        profileData.getStringTable().toArray(new String[] {}),
+        convertedStrings,
         profileData.getDropFrames(),
         profileData.getKeepFrames(),
         profileData.getTimeNanos(),
@@ -80,7 +85,7 @@ final class ProfileMarshaler extends MarshalerWithSize {
       KeyValueMarshaler[] attributeMarshalers,
       AttributeUnitMarshaler[] attributeUnitMarshalers,
       LinkMarshaler[] linkMarshalers,
-      String[] stringTable,
+      byte[][] stringTableUtf8,
       long dropFrames,
       long keepFrames,
       long timeNanos,
@@ -88,7 +93,7 @@ final class ProfileMarshaler extends MarshalerWithSize {
       ValueTypeMarshaler periodTypeMarshaler,
       long period,
       List<Long> comment,
-      int defaultSampleType
+      long defaultSampleType
   ) {
     super(calculateSize(
         sampleTypeMarshalers,
@@ -100,7 +105,7 @@ final class ProfileMarshaler extends MarshalerWithSize {
         attributeMarshalers,
         attributeUnitMarshalers,
         linkMarshalers,
-        stringTable,
+        stringTableUtf8,
         dropFrames,
         keepFrames,
         timeNanos,
@@ -119,7 +124,7 @@ final class ProfileMarshaler extends MarshalerWithSize {
     this.attributeMarshalers = attributeMarshalers;
     this.attributeUnitMarshalers = attributeUnitMarshalers;
     this.linkMarshalers = linkMarshalers;
-    this.stringTable = stringTable;
+    this.stringTable = stringTableUtf8;
     this.dropFrames = dropFrames;
     this.keepFrames = keepFrames;
     this.timeNanos = timeNanos;
@@ -142,8 +147,8 @@ final class ProfileMarshaler extends MarshalerWithSize {
     output.serializeRepeatedMessage(Profile.ATTRIBUTE_TABLE, attributeMarshalers);
     output.serializeRepeatedMessage(Profile.ATTRIBUTE_UNITS, attributeUnitMarshalers);
     output.serializeRepeatedMessage(Profile.LINK_TABLE, linkMarshalers);
-    for (String s : stringTable) {
-      output.serializeString(Profile.STRING_TABLE, s.getBytes(StandardCharsets.UTF_8));
+    for (byte[] i : stringTable) {
+      output.serializeString(Profile.STRING_TABLE, i);
     }
     output.serializeInt64(Profile.DROP_FRAMES, dropFrames);
     output.serializeInt64(Profile.KEEP_FRAMES, keepFrames);
@@ -165,7 +170,7 @@ final class ProfileMarshaler extends MarshalerWithSize {
       KeyValueMarshaler[] attributeMarshalers,
       AttributeUnitMarshaler[] attributeUnitMarshalers,
       LinkMarshaler[] linkMarshalers,
-      String[] stringTable,
+      byte[][] stringTable,
       long dropFrames,
       long keepFrames,
       long timeNanos,
@@ -173,7 +178,7 @@ final class ProfileMarshaler extends MarshalerWithSize {
       ValueTypeMarshaler periodTypeMarshaler,
       long period,
       List<Long> comment,
-      int defaultSampleType
+      long defaultSampleType
   ) {
     int size;
     size = 0;
@@ -186,8 +191,8 @@ final class ProfileMarshaler extends MarshalerWithSize {
     size += MarshalerUtil.sizeRepeatedMessage(Profile.ATTRIBUTE_TABLE, attributeMarshalers);
     size += MarshalerUtil.sizeRepeatedMessage(Profile.ATTRIBUTE_UNITS, attributeUnitMarshalers);
     size += MarshalerUtil.sizeRepeatedMessage(Profile.LINK_TABLE, linkMarshalers);
-    for (String s : stringTable) {
-      size += MarshalerUtil.sizeBytes(Profile.STRING_TABLE, s.getBytes(StandardCharsets.UTF_8));
+    for (byte[] i : stringTable) {
+      size += MarshalerUtil.sizeBytes(Profile.STRING_TABLE, i);
     }
     //output.serializeRepeatedMessage();
     size += MarshalerUtil.sizeInt64(Profile.DROP_FRAMES, dropFrames);

@@ -19,10 +19,10 @@ final class LabelMarshaler extends MarshalerWithSize {
 
   private static final LabelMarshaler[] EMPTY_REPEATED = new LabelMarshaler[0];
 
-  private final int keyIndex;
-  private final int strIndex;
+  private final long keyIndex;
+  private final long strIndex;
   private final long num;
-  private final int numUnitIndex;
+  private final long numUnitIndex;
 
   @Deprecated
   static LabelMarshaler create(LabelData labelData) {
@@ -52,10 +52,10 @@ final class LabelMarshaler extends MarshalerWithSize {
   }
 
   private LabelMarshaler(
-      int keyIndex,
-      int strIndex,
+      long keyIndex,
+      long strIndex,
       long num,
-      int numUnitIndex
+      long numUnitIndex
   ) {
     super(calculateSize(keyIndex, strIndex, num, numUnitIndex));
     this.keyIndex = keyIndex;
@@ -73,10 +73,10 @@ final class LabelMarshaler extends MarshalerWithSize {
   }
 
   private static int calculateSize(
-      int keyIndex,
-      int strIndex,
+      long keyIndex,
+      long strIndex,
       long num,
-      int numUnitIndex
+      long numUnitIndex
   ) {
     int size;
     size = 0;

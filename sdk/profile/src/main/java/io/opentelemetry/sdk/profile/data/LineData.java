@@ -18,15 +18,15 @@ public interface LineData {
    * The index of the corresponding Function for this line.
    * Index into function table.
    */
-  int getFunctionIndex();
+  long getFunctionIndex();
 
   /**
    * Line number in source code.
    */
-  int getLine();
+  long getLine();
 
   /**
    * Column number in source code.
    */
-  int getColumn();
+  long getColumn();
 }
